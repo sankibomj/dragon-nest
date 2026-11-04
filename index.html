@@ -296,7 +296,7 @@ const SEAL0=10, SEAL_X=10;                                          // проп�
 const ART_DECAY=3*GH;
 // === Telegram ===
 // После создания бота и Mini App в @BotFather впишите сюда ссылку вида https://t.me/ИмяБота/ИмяПриложения
-const BOT_LINK='https://t.me/DragonNest_farmbot';
+const BOT_LINK='https://t.me/YOUR_BOT/YOUR_APP';
 const TG=(window.Telegram&&window.Telegram.WebApp&&window.Telegram.WebApp.initData)?window.Telegram.WebApp:null;
 const TG_USER=(TG&&TG.initDataUnsafe&&TG.initDataUnsafe.user)||null;                                               // артефакт без продления падает до мин. цены за 3 часа
 const DENOM_AT=1e13, DENOM_K=1000;                                  // деноминация: порог числа драконов в мире и делитель
@@ -468,8 +468,16 @@ function migrate(x){
   if(!(s.rt>0))s.rt=Date.now();
   return s;
 }
-function loadLocal(){try{const r=localStorage.getItem(KEY);return r?JSON.parse(r):null;}catch(e){return null;}}
-function saveLocal(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
+// локальное сохранение у каждого аккаунта Telegram своё (иначе на одном устройстве аккаунты делили бы один прогресс)
+const LKEY=KEY+(TG_USER?'-u'+TG_USER.id:'');
+function loadLocal(){
+  try{
+    const r=localStorage.getItem(LKEY);if(r)return JSON.parse(r);
+    if(TG_USER){const o=localStorage.getItem(KEY);if(o){const x=JSON.parse(o);if(x&&x.pid===TG_USER.id)return x;}} // старое общее сохранение берём только если оно этого же игрока
+    return null;
+  }catch(e){return null;}
+}
+function saveLocal(){try{localStorage.setItem(LKEY,JSON.stringify(S));}catch(e){}}
 function makeNew(){const f=fresh();initSeason(f);return f;}
 let S=(function(){const l=loadLocal();return l?migrate(l):makeNew();})();
 function syncUser(){
