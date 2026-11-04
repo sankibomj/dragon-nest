@@ -1,0 +1,1578 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>Драконье Гнездо</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Philosopher:wght@700&display=swap">
+<style>
+/* Layout: phone-width column. Sticky top bar (bank, era counter, currencies), scrolling screen, six-tab bar at the bottom.
+   Look: one committed dark world, bronze plates and ember glow on near-black; dragons and eggs carry the colour. */
+:root{
+  color-scheme:dark;
+  --bg:#07080b; --panel:#100e0d; --panel2:#1a1511; --edge:#5a4733; --edge-hi:#a8844f;
+  --ink:#f3ecdf; --muted:#a39682; --ember:#ff8a2a; --gold:#f0b43c; --good:#46b46a; --bad:#e2574c;
+  --violet:#a07bff; --salmon:#ff8f86; --hud:#0b0a0a;
+  --display:'Philosopher',Georgia,'Times New Roman',serif;
+  --body:'Merriweather',Georgia,'Times New Roman',serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;overscroll-behavior-y:contain}
+body{background:radial-gradient(120% 55% at 50% 0%,#241811 0%,transparent 62%),radial-gradient(90% 40% at 50% 100%,#341708 0%,transparent 70%),var(--bg);background-attachment:fixed;color:var(--ink);font:13px/1.5 var(--body);min-height:100%;-webkit-tap-highlight-color:transparent}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--hud)}
+.in{max-width:560px;margin-inline:auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+button{font-family:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--ember);outline-offset:2px}
+h1,h2,h3,p{margin:0}
+em{font-style:normal}
+.ic{width:1.15em;height:1.15em;fill:currentColor;vertical-align:-.2em;flex:none}
+
+/* top bar */
+.hud{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:linear-gradient(#0d0b0a,#0a0908);border-bottom:1px solid #2c2219}
+.hud .in{padding-block:8px;display:grid;gap:8px}
+.row1{display:grid;grid-template-columns:auto 1fr 1fr;gap:10px;align-items:center;text-align:center}
+.gear{width:38px;height:38px;border:0;background:none;color:var(--muted);cursor:pointer;padding:6px}
+.gear .ic{width:100%;height:100%}
+.stat{display:grid;gap:1px;min-width:0}
+.stat b{font:700 13px/1.2 var(--display);color:#d9c9ab;letter-spacing:.02em}
+.stat span{font-size:12px;font-variant-numeric:tabular-nums;display:flex;gap:5px;align-items:center;justify-content:center;white-space:nowrap}
+.cur{display:grid;grid-template-columns:auto 1fr 1fr;gap:6px;align-items:center}
+.cs{display:flex;align-items:center;gap:6px;color:var(--gold);font:700 15px/1 var(--body);font-variant-numeric:tabular-nums;padding-right:6px}
+.cs .ic{width:28px;height:28px}
+.cbtn{display:flex;align-items:center;justify-content:center;gap:6px;min-height:36px;padding:0 10px;border:1px solid var(--edge);background:linear-gradient(#1a1511,#0e0b09);color:#f7e4bd;font:700 13px/1 var(--body);font-variant-numeric:tabular-nums;cursor:pointer;clip-path:polygon(10px 0,calc(100% - 10px) 0,100% 50%,calc(100% - 10px) 100%,10px 100%,0 50%);min-width:0}
+.cbtn .ic{color:var(--gold);width:18px;height:18px}
+.cbtn i{font:700 17px/1 var(--body);color:var(--ember);font-style:normal}
+
+/* plates and cards */
+.plate{display:grid;gap:2px;justify-items:center;align-content:center;min-height:46px;padding:6px 12px;border:0;border-radius:3px;color:#fff4e4;font:700 11.5px/1.15 var(--body);text-transform:uppercase;letter-spacing:.03em;cursor:pointer;text-align:center;text-shadow:0 1px 1px rgba(0,0,0,.7);
+  background:linear-gradient(#cf7a42,#8f4521);box-shadow:inset 0 0 0 1px #eaa56e,inset 0 0 0 3px #6b3216,0 0 0 1px #2b140a,0 2px 6px rgba(0,0,0,.6)}
+.plate.g{background:linear-gradient(#3d9c5b,#1f6035);box-shadow:inset 0 0 0 1px #7bd49c,inset 0 0 0 3px #164a28,0 0 0 1px #0b2214,0 2px 6px rgba(0,0,0,.6)}
+.plate.p{background:linear-gradient(#7a52d6,#43257f);box-shadow:inset 0 0 0 1px #b79bff,inset 0 0 0 3px #32195f,0 0 0 1px #150a2c,0 2px 6px rgba(0,0,0,.6)}
+.plate.sm{min-height:36px;padding:4px 8px;font-size:10.5px}
+.plate.wide{width:100%}
+.plate small{font:700 12px/1 var(--body);display:flex;align-items:center;gap:4px;text-transform:none;letter-spacing:0;font-variant-numeric:tabular-nums}
+.plate:disabled{filter:grayscale(.9) brightness(.65);cursor:default}
+.plate:not(:disabled):active{transform:translateY(1px)}
+.bevel{--c:14px;background:var(--edge);padding:1px;clip-path:polygon(var(--c) 0,calc(100% - var(--c)) 0,100% var(--c),100% 100%,0 100%,0 var(--c))}
+.bevel>.bi{background:linear-gradient(#14110f,#0c0a09);clip-path:polygon(var(--c) 0,calc(100% - var(--c)) 0,100% var(--c),100% 100%,0 100%,0 var(--c));padding:14px;display:grid;gap:10px;min-width:0}
+.bevel.flat>.bi{padding:0;gap:0}
+
+main{padding-top:6px;padding-bottom:calc(92px + env(safe-area-inset-bottom,0px))}
+.sec{display:flex;align-items:center;gap:8px;margin:18px 0 10px;font:700 19px/1.2 var(--display);text-transform:uppercase;letter-spacing:.02em}
+.sec .ic{color:var(--edge-hi);width:18px;height:18px}
+.sec .sp{flex:1}
+.note{font-size:12px;color:var(--muted);max-width:60ch}
+.warn{display:flex;gap:8px;align-items:flex-start;font-size:12.5px;text-align:left}
+.warn .ic{color:var(--bad);width:18px;height:18px;margin-top:1px}
+.err{padding:12px;border:1px solid var(--bad);color:var(--bad)}
+.t2{display:flex;justify-content:space-around;gap:6px;margin:10px 0 12px;border-bottom:1px solid #2c2219}
+.t2 button{flex:1;background:none;border:0;padding:12px 4px;font:700 13px/1 var(--display);text-transform:uppercase;letter-spacing:.04em;color:#cdbfa6;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
+.t2 button[aria-selected="true"]{color:#e9ad63;border-bottom-color:#e9ad63}
+.back{display:inline-flex;align-items:center;gap:6px;background:none;border:0;color:var(--muted);font:700 13px/1 var(--body);padding:10px 0;cursor:pointer}
+
+/* home */
+.isles{position:relative;aspect-ratio:360/450;margin-top:2px}
+.isles>svg{position:absolute;inset:0;width:100%;height:100%}
+.hot{position:absolute;background:none;border:0;padding:0 0 6px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:3px;cursor:pointer;text-shadow:0 2px 8px #000,0 0 3px #000}
+.hot b{font:700 clamp(17px,5.8vw,25px)/1 var(--display);letter-spacing:.04em;color:#f6efe2}
+.hot .chips{display:flex;gap:10px;font-size:11px;font-weight:700;flex-wrap:wrap;justify-content:center}
+.hot .chips span{display:flex;align-items:center;gap:3px}
+.hot.castle{left:14%;top:8%;width:72%;height:48%}
+.hot.altar{left:2%;top:56%;width:46%;height:40%}
+.hot.nest{left:50%;top:58%;width:48%;height:38%}
+.side{position:absolute;top:14%;display:grid;gap:12px}
+.side.l{left:0}.side.r{right:0}
+.round{width:62px;display:grid;justify-items:center;gap:3px;background:none;border:0;cursor:pointer;font:700 11px/1.1 var(--body);text-shadow:0 1px 4px #000;color:#f3ecdf}
+.round i{width:56px;height:56px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(#1a1410,#050404);border:2px solid #7c6240;box-shadow:0 0 12px rgba(255,138,42,.25),inset 0 0 8px #000;font-style:normal;color:#f2e6cf}
+.round i .ic{width:30px;height:30px}
+
+/* scenes and unit cards */
+.banner{position:relative;line-height:0}
+.banner svg{display:block;width:100%;height:auto}
+.banner .tag{position:absolute;left:8px;top:8px;line-height:1.2;padding:3px 9px;border-radius:999px;background:rgba(0,0,0,.65);border:1px solid #4a3a2a;font:700 10.5px/1.3 var(--body);text-transform:uppercase;letter-spacing:.03em;font-variant-numeric:tabular-nums}
+.ub{display:grid;gap:10px;text-align:center;justify-items:center;padding:14px}
+.ub h3{font:700 19px/1.2 var(--body);font-variant-numeric:tabular-nums}
+.ub .eph{color:var(--salmon);font-weight:700;font-size:14px;display:flex;gap:6px;align-items:center;justify-content:center;flex-wrap:wrap}
+.qty{display:flex;gap:6px;justify-content:center;flex-wrap:wrap}
+.qty button{min-width:52px;min-height:32px;padding:0 10px;border:1px solid var(--edge);background:#14100d;color:#d9c9ab;font:700 12px/1 var(--body);cursor:pointer}
+.qty button[aria-pressed="true"]{border-color:var(--ember);color:var(--ember)}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%}
+.btn1{width:100%;max-width:300px}
+
+/* rows with art tile */
+.cardrow{display:grid;grid-template-columns:104px minmax(0,1fr);min-width:0}
+.tile{display:grid;place-items:center;min-height:132px;background:radial-gradient(circle at 50% 60%,var(--tc,#5a2a16),#0b0907 80%);color:#f6e7c8;border-right:1px solid #2c2219}
+.tile .ic{width:54px;height:54px}
+.cbody{display:grid;gap:8px;padding:12px;align-content:center;justify-items:center;text-align:center;min-width:0}
+.cbody h3{font:700 16px/1.25 var(--body)}
+.cbody p{font-size:11.5px;color:var(--muted)}
+.cbody .pair{gap:8px}
+.status{display:grid;place-items:center;min-width:64px;padding:6px;border:1px solid #3a2e22;background:#0a0807;font:700 10.5px/1.2 var(--body);text-transform:uppercase;color:#cdbfa6;text-align:center}
+.status b{font:700 17px/1.1 var(--body);color:var(--ink);font-variant-numeric:tabular-nums}
+.lockrow{position:relative}
+.cardrow.locked .tile{filter:grayscale(1) brightness(.6)}
+
+/* sliders */
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:24px;background:transparent;margin:4px 0}
+input[type=range]::-webkit-slider-runnable-track{height:8px;border-radius:4px;background:linear-gradient(90deg,var(--gold) var(--p,50%),#6e675c var(--p,50%))}
+input[type=range]::-moz-range-track{height:8px;border-radius:4px;background:#6e675c}
+input[type=range]::-moz-range-progress{height:8px;border-radius:4px;background:var(--gold)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:radial-gradient(#ffe38a,#d69a22);border:2px solid #fff3c4;margin-top:-7px;box-shadow:0 0 6px rgba(0,0,0,.7)}
+input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:radial-gradient(#ffe38a,#d69a22);border:2px solid #fff3c4}
+.bal{font:700 24px/1.2 var(--body);text-align:center;font-variant-numeric:tabular-nums;display:flex;align-items:center;justify-content:center;gap:8px}
+.bal .ic{color:var(--gold);width:28px;height:28px}
+.pct{text-align:center;color:var(--muted);font-size:12px}
+
+/* lists */
+.rv{display:grid;grid-template-columns:52px minmax(0,1fr);gap:10px;padding:12px 0;border-bottom:1px solid #2a2017}
+.av{width:52px;height:52px;border-radius:50%;display:grid;place-items:center;font:700 16px/1 var(--body);color:#fff;border:2px solid #5a4733;text-shadow:0 1px 2px #000}
+.rb{display:grid;gap:5px;min-width:0}
+.rb b{font:700 15px/1.2 var(--display);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rb .st{display:flex;gap:12px;flex-wrap:wrap;font-size:11.5px;font-weight:700;font-variant-numeric:tabular-nums}
+.rb .st span{display:inline-flex;gap:4px;align-items:center}
+.mini{display:flex;gap:4px;flex-wrap:wrap}
+.mini i{width:22px;height:22px;display:grid;place-items:center;border-radius:4px;background:#0a0807;border:1px solid #3a2e22;color:var(--ember)}
+.mini i.c{color:var(--violet)}
+.mini .ic{width:15px;height:15px}
+.acts{display:flex;gap:6px;flex-wrap:wrap;margin-top:2px}
+.acts .plate{flex:1 1 84px}
+.pop{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.pop button{flex:1 1 auto;min-height:32px;padding:0 8px;border:1px solid var(--edge);background:#14100d;font:700 11px/1.2 var(--body);cursor:pointer;display:inline-flex;gap:6px;align-items:center;justify-content:center}
+.pop button:disabled{opacity:.4}
+.tag2{display:inline-block;margin-left:6px;padding:1px 6px;border:1px solid #4a3a2a;font:700 10px/1.4 var(--body);color:var(--muted);text-transform:uppercase}
+.rk{font:700 14px/1 var(--body);color:var(--muted);align-self:center}
+.me{background:rgba(255,138,42,.07)}
+.search{display:flex;gap:8px;margin-bottom:10px}
+.search input{flex:1;min-width:0;min-height:42px;padding:0 12px;background:#0b0908;border:1px solid var(--edge);color:var(--ink);font:13px var(--body)}
+.search input::placeholder{color:#7d705d}
+.clan{display:grid;grid-template-columns:44px minmax(0,1fr);gap:10px;padding:12px 0;border-bottom:1px solid #2a2017}
+.crest{width:44px;height:56px;clip-path:polygon(0 0,100% 0,100% 70%,50% 100%,0 70%);display:grid;place-items:center;font:700 11px/1.1 var(--display);text-align:center;color:#fff;padding:4px}
+.clan h3{font:700 14px/1.25 var(--body);text-transform:uppercase}
+.clan p{font-size:12px;color:var(--muted)}
+.clan .st{display:flex;gap:12px;flex-wrap:wrap;margin:3px 0;font-size:12px;font-weight:700}
+.clan .st span{display:inline-flex;gap:4px;align-items:center}
+.logs{display:grid;gap:6px}
+.logs p{font-size:12px;color:#cdbfa6;padding:6px 8px;border-left:2px solid #4a3a2a;background:#0b0908}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.shopc{display:grid;gap:8px;justify-items:center;text-align:center;padding:12px 8px;min-width:0}
+.shopc .ico{width:84px;height:84px;display:grid;place-items:center;color:#f4a24a}
+.shopc .ico .ic{width:70px;height:70px}
+.shopc.cu .ico{color:var(--violet)}
+.shopc h3{font:700 14px/1.25 var(--body)}
+.shopc p{font-size:11px;color:var(--muted);min-height:2.6em}
+.card2{position:relative;display:grid;gap:6px;justify-items:center;text-align:center;padding:12px 8px 10px;border:1px solid #3a2e22;background:linear-gradient(#120f0d,#0b0908);min-width:0}
+.card2 .ico{width:78px;height:78px;display:grid;place-items:center;color:#f4a24a}
+.card2 .ico .ic{width:62px;height:62px}
+.card2.cu .ico{color:var(--violet)}
+.card2 h3{font:700 13px/1.25 var(--body)}
+.card2 p{font-size:10.5px;color:var(--muted)}
+.card2 .bd{position:absolute;right:6px;top:6px;min-width:34px;padding:3px 6px;border-radius:999px;border:1px solid #b9753a;background:#1a0f08;color:#ffb36b;font:700 12px/1 var(--body);font-variant-numeric:tabular-nums}
+.card2 .on{position:absolute;left:6px;top:6px;padding:3px 7px;border-radius:999px;background:#000;border:1px solid #4a3a2a;font:700 9.5px/1.2 var(--body);text-transform:uppercase}
+.prof{display:grid;grid-template-columns:78px minmax(0,1fr);gap:12px;align-items:center}
+.hexav{width:78px;height:88px;clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);background:#6aa39a;display:grid;place-items:center;font:700 24px/1 var(--body);color:#eaf7f3}
+.prof h3{font:700 17px/1.2 var(--body);grid-column:2}
+.pstats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px 10px;font-size:12px;font-weight:700;font-variant-numeric:tabular-nums}
+.pstats span{display:flex;gap:5px;align-items:center;white-space:nowrap}
+.chipbar{display:flex;gap:8px;overflow-x:auto;padding:2px 0 10px;margin:8px 0 4px;scrollbar-width:none}
+.chipbar::-webkit-scrollbar{display:none}
+.chipbar button{flex:none;min-height:36px;padding:0 18px;border-radius:18px;border:1px solid #3a2e22;background:#17120f;font:700 12px/1 var(--body);color:#d9c9ab;cursor:pointer;text-transform:uppercase}
+.chipbar button[aria-pressed="true"]{border-color:#caa36a;color:#f2d9a8;background:#241a12}
+.bar{height:8px;background:#26201a;border-radius:4px;overflow:hidden;width:100%}
+.bar>i{display:block;height:100%;background:linear-gradient(90deg,#c8791f,var(--gold));border-radius:4px}
+.days{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+.day{display:grid;gap:3px;justify-items:center;padding:8px 2px;border:1px solid #3a2e22;background:#0b0908;font-size:10px;text-align:center;color:var(--muted)}
+.day b{font:700 12px/1 var(--body);color:var(--ink)}
+.day.now{border-color:var(--ember)}
+.day.done{opacity:.45}
+.task{display:grid;gap:8px}
+.task h3{font:700 14px/1.3 var(--body)}
+.task .rw{font-size:12px;color:var(--gold)}
+.war{display:flex;align-items:center;gap:12px;padding:12px;background:linear-gradient(120deg,#8b2a18,#c4503a);border:0;width:100%;text-align:left;cursor:pointer;color:#fff;margin-bottom:10px}
+.war small{display:block;font-size:12px;opacity:.85}
+.war b{font:700 19px/1.15 var(--display);text-transform:uppercase}
+.war .sp{flex:1}
+.sc{display:flex;gap:8px;flex-wrap:wrap}
+.sc button{flex:1 1 70px;min-height:42px;border:1px solid var(--edge);background:#14100d;font:700 13px/1 var(--body);cursor:pointer}
+.sc button[aria-pressed="true"]{border-color:var(--ember);color:var(--ember)}
+.kv{display:flex;justify-content:space-between;gap:10px;font-size:12.5px;padding:4px 0;border-bottom:1px dashed #2a2017}
+.kv b{font-variant-numeric:tabular-nums}
+.hint p{font-size:12.5px;max-width:60ch}
+.info p{font-size:12.5px;color:#d9ceba;margin-bottom:8px;max-width:62ch}
+.info b{color:var(--gold)}
+
+.act{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px}
+.rb .act{margin:4px 0 0}
+.act:empty{display:none}
+.act span{display:inline-flex;gap:5px;align-items:center;padding:3px 8px;border:1px solid #4a3a2a;background:#0a0807;font:700 11px/1.3 var(--body);color:#f2d9a8}
+.act .ic{width:14px;height:14px;color:inherit}
+.act.ico span{border:0;background:none;padding:0}
+.act.ico .ic{width:22px;height:22px}
+/* bottom tabs */
+.nav{position:fixed;left:0;right:0;bottom:0;z-index:20;background:linear-gradient(#0d0b0a,#070606);border-top:1px solid #2c2219;padding-bottom:env(safe-area-inset-bottom,0px)}
+.nav .in{display:grid;grid-template-columns:repeat(7,1fr);gap:0;padding-block:6px}
+.tab{position:relative;display:grid;gap:3px;justify-items:center;align-content:center;min-height:56px;border:0;background:none;color:#e7dcc6;font:700 10px/1.1 var(--body);cursor:pointer;min-width:0;padding:0}
+.tab .ic{width:26px;height:26px}
+.tab span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;position:relative;z-index:1}
+.tab .ic{position:relative;z-index:1}
+.tab[aria-selected="true"]{color:var(--ember)}
+.tab[aria-selected="true"]::before,.tab[aria-selected="true"]::after{content:"";position:absolute;clip-path:polygon(22% 0,78% 0,100% 50%,78% 100%,22% 100%,0 50%)}
+.tab[aria-selected="true"]::before{inset:-4px -6px;background:var(--ember);opacity:.9}
+.tab[aria-selected="true"]::after{inset:-3px -5px;background:linear-gradient(#1b110b,#090605)}
+
+.toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom,0px));transform:translate(-50%,8px);max-width:calc(100% - 32px);padding:9px 14px;background:#f1e6d0;color:#1a120b;font:700 12.5px/1.35 var(--body);border:1px solid #a8844f;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:40;text-align:center}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+.fs{position:fixed;inset:0;z-index:100;display:none;align-items:center;justify-content:center;padding:24px;text-align:center;cursor:pointer;--fc:#ff8a2a;background:radial-gradient(ellipse at 50% 40%,color-mix(in srgb,var(--fc) 38%,#000) 0,#050304 78%)}
+.fs.on{display:flex;animation:fsin .35s ease-out}
+.fs[data-kind="era1"]{--fc:#46b46a}
+.fs[data-kind="era2"]{--fc:#ff8a2a}
+.fs[data-kind="era3"]{--fc:#e2574c}
+.fs[data-kind="atk"]{--fc:#e2574c}
+.fs[data-kind="def"]{--fc:#4f8fd6}
+.fs[data-kind="curse"]{--fc:#9b4fd6}
+.fs[data-kind="denom"]{--fc:#f0b43c}
+.fs-in{max-width:420px;display:grid;gap:14px;justify-items:center}
+.fs-k{font:700 13px/1 var(--body);letter-spacing:.28em;text-transform:uppercase;color:var(--fc)}
+.fs h2{margin:0;font:700 clamp(30px,9vw,46px)/1.1 var(--display);color:#fff;text-shadow:0 0 28px var(--fc)}
+.fs p{margin:0;font:400 16px/1.5 var(--body);color:var(--ink)}
+.fs .fs-s{font-weight:700;color:var(--fc)}
+.fs .fs-t{font:400 12px/1 var(--body);color:var(--muted);margin-top:8px}
+@keyframes fsin{from{opacity:0;transform:scale(1.04)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion: reduce){.fs.on{animation:none}}
+@media (prefers-reduced-motion: no-preference){
+  .flick{animation:flick 1.6s ease-in-out infinite}
+  .fl2{animation:flick 2.1s ease-in-out infinite .4s}
+}
+@keyframes flick{0%,100%{opacity:.85}50%{opacity:1}}
+</style>
+
+<header class="hud"><div class="in">
+  <div class="row1">
+    <button class="gear" data-act="panel" data-p="set" aria-label="Настройки" data-ic="gear"></button>
+    <div class="stat"><b>Банк</b><span><i data-ic="wings"></i><em data-v="bank">0</em></span></div>
+    <div class="stat"><b data-v="eralabel">Осталось до 2 эры</b><span><i data-ic="dragon"></i><em data-v="toera">0</em></span></div>
+  </div>
+  <div class="cur">
+    <div class="cs"><i data-ic="star"></i><em data-v="stars">0</em></div>
+    <button class="cbtn" data-act="tab" data-t="gold" aria-label="Золото"><i data-ic="coin"></i><em data-v="gold">0</em><i>+</i></button>
+    <button class="cbtn" data-act="tab" data-t="gold" aria-label="Дары небес"><i data-ic="wings"></i><em data-v="wings">0</em><i>+</i></button>
+  </div>
+</div></header>
+<main class="in" id="view"></main>
+<nav class="nav" aria-label="Разделы"><div class="in" id="tabs">
+  <button class="tab" data-act="tab" data-t="gold"><i data-ic="coin"></i><span>Dra-Coins</span></button>
+  <button class="tab" data-act="tab" data-t="star"><i data-ic="star"></i><span>Звёзды</span></button>
+  <button class="tab" data-act="tab" data-t="fight"><i data-ic="trophy"></i><span>Сражения</span></button>
+  <button class="tab" data-act="tab" data-t="farm"><i data-ic="wings"></i><span>Фарминг</span></button>
+  <button class="tab" data-act="tab" data-t="earn"><i data-ic="coins"></i><span>Заработки</span></button>
+  <button class="tab" data-act="tab" data-t="shop"><i data-ic="chest"></i><span>Магазин</span></button>
+  <button class="tab" data-act="tab" data-t="inv"><i data-ic="pack"></i><span>Инвентарь</span></button>
+</div></nav>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div class="fs" id="fs" role="alertdialog" aria-live="assertive"><div class="fs-in"><div class="fs-k" id="fsk"></div><h2 id="fst"></h2><p id="fsp"></p><p class="fs-s" id="fss"></p><div class="fs-t">нажмите, чтобы закрыть</div></div></div>
+
+<script>
+(function(){
+'use strict';
+
+/* ================= константы ================= */
+const TS=1;            // игровых секунд в одной реальной секунде при скорости ×1
+const GH=3600000;       // игровой час, мс
+const BIRTH=0.4;        // яиц в игровой час на одного дракона
+const CAT_BASE=1e9;      // обычный катаклизм: 1 млрд драконов в час (сброс после каждого сезона)
+const CAT_STEP=10*60000; // катаклизм в 3 эре растёт сам каждые 10 минут
+const CAT_GROW_MIN=0.25; // рост за шаг, когда драконов ещё много (+25%)
+const CAT_GROW_MAX=1.0;  // рост за шаг, когда драконов почти не осталось (+100%)
+const CAT_MAX=1e18;
+const CAT_LEN=12;       // длительность катаклизма, игр. часов
+const SELL_LOSS=0.4, HATCH_LOSS=0.1;
+const PAY_EVERY=2*GH, BOOST_DUR=45*60000, EYE_DUR=15*60000, STAR_DUR=3*GH, CAMP_CD=24*GH, ATK_CD=0.25*GH, IMM_DUR=1*GH, DEB_DUR=2*GH;
+const KEY='dragon-nest-v8', EXT_GOLD=4000;
+const CAMP_TAKE=0.04, CAMP_MIN=1000, CAMP_GROW=1.25, CAMP_DECAY=0.04; // лагерь: доля за приручение, мин. цена в коинах, рост цены за покупку, скорость падения цены
+const SEAL0=10, SEAL_X=10;                                          // пропуск лагеря: 10 печатей, каждый следующий ×10, сброс через сутки
+const ART_DECAY=3*GH;
+// === Telegram ===
+// После создания бота и Mini App в @BotFather впишите сюда ссылку вида https://t.me/ИмяБота/ИмяПриложения
+const BOT_LINK='https://t.me/YOUR_BOT/YOUR_APP';
+const TG=(window.Telegram&&window.Telegram.WebApp&&window.Telegram.WebApp.initData)?window.Telegram.WebApp:null;
+const TG_USER=(TG&&TG.initDataUnsafe&&TG.initDataUnsafe.user)||null;                                               // артефакт без продления падает до мин. цены за 3 часа
+const DENOM_AT=1e13, DENOM_K=1000;                                  // деноминация: порог числа драконов в мире и делитель
+const PRIZE=[33.3,20,12,8,5,3.5,2.5,1.5,1,0.7];                     // призы из банка по местам, %
+
+/* ================= иконки ================= */
+const IC={
+ claw:'<path d="M8 4c4 6 5 14 2 24-4-8-6-16-2-24zM15 3c4 7 5 15 2 25-4-8-6-17-2-25zM22 4c4 6 5 14 2 24-4-8-6-16-2-24z"/>',
+ dragon:'<path d="M3 26C3 20 8 16 12 15L10 6l6 5 4-7 2 8c4 0 7 2 8 6l-5 1 3 3h-6c-1 3-5 5-10 5z"/><circle cx="21" cy="15" r="1.4" fill="#000"/>',
+ shield:'<path d="M16 3l11 4v9c0 7-5 11-11 13C10 27 5 23 5 16V7z"/>',
+ swords:'<path d="M5 6l21 21-2.5 2.5L2.5 8.5zM27 6L6 27l2.5 2.5L29.5 8.5z"/><path d="M2 11l6-6 3 3-6 6zM30 11l-6-6-3 3 6 6z"/>',
+ egg:'<path d="M16 3c7 0 11 11 11 17a11 9 0 0 1-22 0C5 14 9 3 16 3z"/>',
+ wings:'<path d="M16 19C13 8 6 5 2 8c4 1 5 5 5 9 2-2 4-2 5 1zM16 19c3-11 10-14 14-11-4 1-5 5-5 9-2-2-4-2-5 1z"/><path d="M16 12l2 6-2 5-2-5z"/>',
+ coin:'<circle cx="16" cy="16" r="13" fill="none" stroke="currentColor" stroke-width="2.4"/><g transform="translate(7.5 7.5) scale(.55)"><path d="M3 26C3 20 8 16 12 15L10 6l6 5 4-7 2 8c4 0 7 2 8 6l-5 1 3 3h-6c-1 3-5 5-10 5z"/></g>',
+ coins:'<ellipse cx="16" cy="8" rx="11" ry="4"/><path d="M5 11v5c0 2 5 4 11 4s11-2 11-4v-5c0 2-5 4-11 4S5 13 5 11zM5 19v5c0 2 5 4 11 4s11-2 11-4v-5c0 2-5 4-11 4S5 21 5 19z"/>',
+ star:'<path d="M16 2l4 9 10 1-7.5 6.5L25 28l-9-5.3L7 28l2.5-9.5L2 12l10-1z"/>',
+ altar:'<path d="M16 2S6 13 6 20a10 10 0 0 0 20 0C26 13 16 2 16 2z"/><circle cx="16" cy="21" r="3.5" fill="#000" opacity=".45"/>',
+ eye:'<path d="M1 16C6 8 26 8 31 16 26 24 6 24 1 16z" fill="none" stroke="currentColor" stroke-width="2.4"/><ellipse cx="16" cy="16" rx="3.4" ry="6.5"/>',
+ chest:'<path d="M3 14C3 7 29 7 29 14z"/><rect x="3" y="15" width="26" height="13" rx="2"/><rect x="14" y="14" width="4" height="7" fill="#000" opacity=".5"/>',
+ crown:'<path d="M3 25l2-15 7 7 4-11 4 11 7-7 2 15z"/>',
+ scroll:'<path d="M8 4h16a3 3 0 0 1 3 3v18a3 3 0 0 1-3 3H8a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3z" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M10 11h12M10 16h12M10 21h8" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>',
+ people:'<circle cx="12" cy="10" r="5"/><circle cx="23" cy="12" r="4"/><path d="M2 27c0-6 4-10 10-10s10 4 10 10zM21 18c5 0 9 3 9 9h-6c0-4-1-6-3-9z"/>',
+ gear:'<circle cx="16" cy="16" r="6" fill="none" stroke="currentColor" stroke-width="2.6"/><g stroke="currentColor" stroke-width="3.6" stroke-linecap="round"><path d="M16 3v4M16 25v4M3 16h4M25 16h4M7 7l3 3M22 22l3 3M25 7l-3 3M10 22l-3 3"/></g>',
+ info:'<circle cx="16" cy="16" r="13" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M12.5 12.5a3.5 3.5 0 1 1 5 3.2c-1.3.8-2 1.5-2 3" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><circle cx="15.5" cy="23" r="1.6"/>',
+ hourglass:'<path d="M8 3h16v3c0 5-5 7-5 10s5 5 5 10v3H8v-3c0-5 5-7 5-10S8 11 8 6z"/>',
+ seal:'<circle cx="16" cy="16" r="14" fill="#8a5a2c"/><circle cx="16" cy="16" r="11.5" fill="none" stroke="#e8b878" stroke-width="1.4"/><path d="M11 8h10v3c0 3-3 4-3 5s3 2 3 5v3H11v-3c0-3 3-4 3-5s-3-2-3-5z" fill="#b99cff"/>',
+ pack:'<path d="M10 7a6 6 0 0 1 12 0v2H10z" fill="none" stroke="currentColor" stroke-width="2.4"/><rect x="5" y="9" width="22" height="19" rx="6"/><rect x="10" y="18" width="12" height="7" rx="2" fill="#000" opacity=".5"/>',
+ trophy:'<path d="M9 4h14v8a7 7 0 0 1-14 0zM9 6H4c0 5 2 8 6 9M23 6h5c0 5-2 8-6 9M14 19h4v4h5v4H9v-4h5z"/>',
+ lock:'<rect x="6" y="14" width="20" height="14" rx="2"/><path d="M10 14V10a6 6 0 0 1 12 0v4" fill="none" stroke="currentColor" stroke-width="3"/>',
+ lotus:'<g><ellipse cx="16" cy="17" rx="4" ry="10"/><ellipse cx="16" cy="17" rx="4" ry="10" transform="rotate(-38 16 24)"/><ellipse cx="16" cy="17" rx="4" ry="10" transform="rotate(38 16 24)"/><ellipse cx="16" cy="19" rx="3.4" ry="9" transform="rotate(-72 16 26)" opacity=".8"/><ellipse cx="16" cy="19" rx="3.4" ry="9" transform="rotate(72 16 26)" opacity=".8"/></g>',
+ blade:'<path d="M25 2l5 5-14 14-5-5zM9 18l5 5-3 3-2-2-4 4-2-2 4-4-2-2z"/>',
+ amulet:'<path d="M16 3l11 4v9c0 7-5 11-11 13C10 27 5 23 5 16V7z"/><path d="M17 8l-5 9h4l-1 7 5-9h-4z" fill="#000" opacity=".55"/>',
+ sphere:'<circle cx="16" cy="16" r="12"/><ellipse cx="12" cy="11" rx="4" ry="2.6" fill="#fff" opacity=".35" transform="rotate(-30 12 11)"/>',
+ wing2:'<path d="M2 9c6 0 11 4 13 11l-2 5c-1-4-3-6-6-6 0-3-1-6-5-10zM30 9c-6 0-11 4-13 11l2 5c1-4 3-6 6-6 0-3 1-6 5-10z"/>',
+ wreath:'<g><circle cx="16" cy="5" r="3"/><circle cx="25" cy="9" r="3"/><circle cx="28" cy="17" r="3"/><circle cx="24" cy="25" r="3"/><circle cx="16" cy="28" r="3"/><circle cx="8" cy="25" r="3"/><circle cx="4" cy="17" r="3"/><circle cx="7" cy="9" r="3"/></g>',
+ clock:'<circle cx="16" cy="16" r="12" fill="none" stroke="currentColor" stroke-width="2.6"/><path d="M16 8v8l5 3" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/>',
+ tri:'<path d="M16 3l14 25H2z" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round"/><circle cx="16" cy="19" r="3.2"/>',
+ staff:'<path d="M15 10h2v20h-2z"/><circle cx="16" cy="7" r="5"/><path d="M11 12l5 4 5-4" fill="none" stroke="currentColor" stroke-width="2"/>',
+ ring:'<circle cx="16" cy="19" r="9" fill="none" stroke="currentColor" stroke-width="3.4"/><path d="M12 8l4-5 4 5-4 4z"/>',
+ cloak:'<path d="M16 3c-5 0-8 3-8 7 0 4-4 6-5 18 4-2 8-3 13-3s9 1 13 3c-1-12-5-14-5-18 0-4-3-7-8-7z"/>',
+ bot:'<rect x="6" y="9" width="20" height="16" rx="4"/><circle cx="12" cy="17" r="2.6" fill="#000"/><circle cx="20" cy="17" r="2.6" fill="#000"/><path d="M16 9V4M13 4h6" stroke="currentColor" stroke-width="2.4"/>',
+ fountain:'<path d="M16 3c0 5-4 7-4 11h8c0-4-4-6-4-11zM5 18h22l-3 10H8z"/>',
+ skull:'<path d="M16 3c-6 0-10 4-10 10 0 4 2 6 4 7v5h12v-5c2-1 4-3 4-7 0-6-4-10-10-10z"/><circle cx="12" cy="14" r="2.6" fill="#000"/><circle cx="20" cy="14" r="2.6" fill="#000"/>',
+ warn:'<path d="M16 2l14 14-14 14L2 16z"/><path d="M16 9v9" stroke="#1a0a08" stroke-width="3" stroke-linecap="round"/><circle cx="16" cy="22.5" r="1.8" fill="#1a0a08"/>',
+ refresh:'<path d="M26 16a10 10 0 1 1-3.5-7.6" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><path d="M27 3v8h-8z"/>',
+ chev:'<path d="M5 11l11 11 11-11" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>',
+ left:'<path d="M20 5L9 16l11 11" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>'
+};
+const ic=(n,c)=>'<svg class="ic'+(c?' '+c:'')+'" viewBox="0 0 32 32" aria-hidden="true">'+(IC[n]||'')+'</svg>';
+const ACOL={claws:['#7a1f1f','#ff9a8a'],eye:['#6a1b9a','#e1bee7'],staff:['#2e7d32','#a5d6a7'],ring:['#b8860b','#ffe082'],sword:['#8a1f2b','#ff8a80'],cloak:['#3a3f6a','#9fa8da'],bot:['#455a64','#b0bec5'],fountain:['#0277bd','#81d4fa']};
+function artPic(k,sz){
+  const c=ACOL[k]||['#555','#ccc'],id='ag'+k;
+  return '<svg viewBox="0 0 64 64" width="'+(sz||48)+'" height="'+(sz||48)+'" aria-hidden="true"><defs><radialGradient id="'+id+'" cx=".5" cy=".4" r=".8"><stop offset="0" stop-color="'+c[1]+'"/><stop offset="1" stop-color="'+c[0]+'"/></radialGradient></defs><rect x="2" y="2" width="60" height="60" rx="14" fill="url(#'+id+')" stroke="#f0d9a0" stroke-width="2.5"/><circle cx="32" cy="32" r="22" fill="#fff" opacity=".14"/><g transform="translate(13 13) scale(1.2)" fill="#fff" style="color:#fff">'+(IC[ARTS[k].ic]||'')+'</g></svg>';
+}
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ================= данные игры ================= */
+const BOOSTS={
+  lotus:{n:'Лотос Плодородия',d:'+50% к рождаемости',ic:'lotus'},
+  blade:{n:'Клинок Кровожадности',d:'+50% к силе охотников',ic:'blade'},
+  amulet:{n:'Оберег Прочности',d:'+50% к силе защитников',ic:'amulet'},
+  sphere:{n:'Сфера Стойкости',d:'×0,666 урон от катаклизма',ic:'sphere'},
+  swift:{n:'Крылья Скорости',d:'+33,3% к скорости перезарядки атаки',ic:'wing2'},
+  wreath:{n:'Венец Беспечности',d:'+50% к длительности иммунитета',ic:'wreath'}
+};
+const CURSES={
+  wither:{n:'Увядание',d:'−50% к рождаемости',t:'lotus',ic:'lotus'},
+  weak:{n:'Слабость',d:'−50% к силе охотников',t:'blade',ic:'blade'},
+  fragile:{n:'Хлипкость',d:'−50% к силе защитников',t:'amulet',ic:'amulet'},
+  hopeless:{n:'Безнадёжность',d:'×1,33 урон от катаклизмов',t:'sphere',ic:'sphere'},
+  tired:{n:'Утомление',d:'+33,3% к задержке перезарядки атаки',t:'swift',ic:'clock'},
+  vuln:{n:'Уязвимость',d:'−50% к длительности иммунитета',t:'wreath',ic:'tri'}
+};
+const ITEM=Object.assign({},BOOSTS,CURSES);
+const ITEM_GOLD=3000, ITEM_PACK=20;
+const CLAN_DUR=24*GH;
+const CB={
+  birth:{n:'Клановый прирост',d:'+25% к рождаемости на сутки',ic:'egg',cost:150},
+  atk:{n:'Клановая ярость',d:'+25% к силе охотников на сутки',ic:'blade',cost:150},
+  def:{n:'Клановый оплот',d:'+25% к силе защитников на сутки',ic:'shield',cost:150}
+};
+const GB={
+  birth:{n:'Прирост',d:'Рождаемость ×1,5 (45 мин)',cost:40,ic:'egg',era:1,dur:BOOST_DUR},
+  atk:{n:'Буйство',d:'Атака ×1,5 (45 мин)',cost:60,ic:'blade',era:1,dur:BOOST_DUR},
+  def:{n:'Оборона',d:'Защита ×1,5 (45 мин)',cost:30,ic:'shield',era:1,dur:BOOST_DUR},
+  eye:{n:'Внимание',d:'Эффект Глаза древних: видны защита, DF, яйца и Dra-Coins врага (15 мин)',cost:50,ic:'eye',era:1,dur:EYE_DUR}
+};
+const SB={
+  b3:{n:'Рост ×3',d:'Рождаемость ×3 до конца сезона',cost:1,ic:'egg',era:1},
+  a3:{n:'Ярость ×3',d:'Сила охотников ×3 до конца сезона',cost:1,ic:'swords',era:1},
+  d3:{n:'Оплот ×3',d:'Сила защитников ×3 до конца сезона',cost:1,ic:'shield',era:1},
+  panic:{n:'Паника',d:'Урон катаклизма ×50 для всех (3 ч). Только в 3 эре',cost:1,ic:'warn',era:3},
+  calm:{n:'Спокойствие',d:'Урон катаклизма ÷50 для всех (3 ч). Только в 3 эре',cost:1,ic:'lotus',era:3},
+  stop:{n:'Возвращение',d:'Уничтожает 80% всех драконов в мире и возвращает 2 эру. Только в 3 эре',cost:1,ic:'hourglass',era:3}
+};
+const ART_PRICE=1000000;
+const ARTS={
+  staff:{n:'Посох плодородия',d:'Яйца появляются в 2 раза быстрее. Владелец открывает и закрывает буст «Прирост» для всех',era:1,ic:'staff'},
+  ring:{n:'Кольцо богатства',d:'Драконы и войска стоят в 2 раза дешевле',era:1,ic:'ring'},
+  fountain:{n:'Фонтан',d:'Рождаемость ×5 в 1 эре и ×2 во 2 эре',era:1,ic:'fountain'},
+  bot:{n:'Бот драконов',d:'Каждые 15 секунд выращивает драконов и берёт бусты за вас',era:1,ic:'bot'},
+  eye:{n:'Глаз древних',d:'Видно DF, яйца и Dra-Coins соперника. Владелец открывает и закрывает буст «Внимание» для всех',era:1,ic:'eye'},
+  sword:{n:'Меч правосудия',d:'Эффективность атаки ×2. Владелец открывает и закрывает буст «Буйство» для всех',era:2,ic:'blade'},
+  cloak:{n:'Плащ невидимости',d:'Вас не видно: вы неуязвимы для атак',era:2,ic:'cloak'}
+};
+ARTS.claws={n:'Когти дракона',d:'Крадут 100% яиц у цели при атаке, сколько бы у неё ни было защиты (нужна хоть какая-то сила атаки). Доступны только 5 минут, продлить нельзя. Буста нет',era:2,ic:'claw'};
+const BOWN={birth:'staff',atk:'sword',eye:'eye'};
+const UNIT={dragon:{c:25,n:'Драконы',k:'dragons'},hunter:{c:8,n:'Охотники',k:'hunters'},defender:{c:2,n:'Защитники',k:'defenders'}};
+const RN=['Гремлин','Jordan Flows','Тип','Sasha','vlad','Никита','Святослав','Sergey','Алина','DarkWing','Пепел','Dragonslayer','Mira','Ксения','Boris','Тень','Flame','Игорь','Luna','Vortex','Рыжий','Kaito','Анна','Zed','Егор','Pixel','Мамонт','Ryu','Лиса','Orion','Дима','Naga','Тоха','Hex','Катя','Wolf','Рубин','Archi','Грифон','Neo'];
+const CN=[['ИМПЕРИЯ ЗЛОДЕЕВ','#2a5de0'],['ИМПЕРИЯ ГЕРОЕВ','#a8322a'],['GREMLINS EMPIRE','#8a1f2b'],['Ночные Стражи','#3a3f6a'],['Пепельный Орден','#5a4a3a'],['Клык и Пламя','#c0561e'],['Серебряные Крылья','#6a7a8a'],['Тени Утёса','#3a2a52'],['Братство Яйца','#7a6a22'],['Хранители Алтаря','#2a6a52']];
+const DAILY=[{g:100},{w:500},{g:200},{sl:1},{g:250},{g:300},{t:2}];
+const TASKS=[
+  {id:'grown',t:'Вырастите 3 000 драконов',n:3000,get:()=>S.st.grown,rw:{g:100}},
+  {id:'def',t:'Купите 50 защитников',n:50,get:()=>S.st.def,rw:{g:500}},
+  {id:'hunt',t:'Купите 100 охотников',n:100,get:()=>S.st.hunt,rw:{g:500}},
+  {id:'win',t:'Победите в 3 атаках',n:3,get:()=>S.st.wins,rw:{sl:1}},
+  {id:'sac',t:'Принесите жертву на алтаре',n:1,get:()=>S.st.sac,rw:{g:50}},
+  {id:'boost',t:'Активируйте любой буст за золото',n:1,get:()=>S.st.boosts,rw:{g:300}},
+  {id:'camp',t:'Приручите драконов в лагере',n:1,get:()=>S.st.camp,rw:{g:100}},
+  {id:'clan',t:'Вступите в клан',n:1,get:()=>S.clan>=0?1:0,rw:{g:500}},
+  {id:'box',t:'Откройте Dragon Box',n:1,get:()=>S.st.box,rw:{sl:1}}
+];
+
+/* ================= состояние ================= */
+const rnd=n=>Math.floor(Math.random()*n);
+function hash(s){let h=0;for(let i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))|0;return Math.abs(h);}
+function genRivals(){
+  return [{id:100000000+rnd(899999999),n:'Дракон-бот',col:'hsl(20 42% 36%)',d:100,g:0.25+Math.random()*0.15,
+    hr:1e-3+Math.random()*1.5e-3,dr:5e-4+Math.random()*1e-3,sv:1,clan:-1,inv:{},cloak:false,deb:{},imm:0,dead:false,deadAt:0,wings:3e6,gold:500,eggs:0}];
+}
+function genClans(){return [];}
+function fresh(){
+  return {v:8,rt:Date.now(),gt:0,speed:1,catN:CAT_BASE,catNext:0,artR:{},dead:false,deadAt:0,breakUntil:0,botNext:120000,gbOpen:{birth:1,atk:1,eye:1},blk:false,season:1,era:1,cat0:0,noCat:0,w2:1,w3:1,nextPay:PAY_EVERY,nextRaid:0.8*GH,
+    dragons:100,hunters:0,defenders:0,eggs:20,wings:1e14,gold:1e14,stars:10,seals:3,tix:1,altar:0,bank:0,sky:0,bankV:2,cb:{birth:0,atk:0,def:0},
+    gb:1,gbN:0,campAt:0,atkAt:0,imm:0,camp:0,campP:CAMP_MIN,skipN:0,skipReset:0,botOn:1,denom:1,own:{},
+    boost:{birth:0,atk:0,def:0,eye:0},sb:{b3:0,a3:0,d3:0,panic:0,calm:0},deb:{},
+    inv:{},arts:{},rivals:genRivals(),clans:genClans(),clan:-1,war:{e:1,a:0,b:0},
+    log:[],st:{grown:0,def:0,hunt:0,wins:0,sac:0,boosts:0,camp:0,box:0,sold:0},tc:{},
+    daily:{last:'',streak:0},hint:0,name:'Игрок',pid:100000000+rnd(899999999),last:null,savedAt:0};
+}
+function initSeason(s){
+  s.catN=CAT_BASE;s.catNext=0;
+  s.gt=0;s.era=1;s.cat0=0;s.noCat=0;s.nextPay=PAY_EVERY;s.nextRaid=0.8*GH;
+  s.dragons=100;s.hunters=0;s.defenders=0;s.eggs=20;s.altar=0;s.cb={birth:0,atk:0,def:0};s.gb=1;s.gbN=0;s.camp=0;s.campP=CAMP_MIN;s.skipN=0;s.skipReset=0;s.botOn=1;s.denom=1;s.own={};s.arts={};
+  s.artR={};s.dead=false;s.deadAt=0;s.botNext=120000;s.gbOpen={birth:1,atk:1,eye:1};s.blk=false;
+  s.campAt=0;s.atkAt=0;s.imm=0;s.boost={birth:0,atk:0,def:0,eye:0};s.sb={b3:0,a3:0,d3:0,panic:0,calm:0};s.deb={};s.inv={};
+  s.rivals=genRivals();if(!Array.isArray(s.clans))s.clans=[];s.log=[];
+  if(s.clan>=0&&s.clan>=s.clans.length)s.clan=-1;
+  let w=s.dragons;s.rivals.forEach(r=>{w+=r.d;});
+  s.w2=1e10;s.w3=1e12;
+  s.war={e:-1,a:0,b:0};
+}
+function migrate(x){
+  const f=fresh();
+  if(!x||typeof x!=='object'||x.v!==8){initSeason(f);return f;}
+  const s=Object.assign(f,x);
+  s.boost=Object.assign({birth:0,atk:0,def:0,eye:0},x.boost||{});
+  s.sb=Object.assign({b3:0,a3:0,d3:0,panic:0,calm:0},x.sb||{});
+  s.st=Object.assign(fresh().st,x.st||{});
+  ['deb','inv','arts','tc','artR','own'].forEach(k=>{s[k]=x[k]&&typeof x[k]==='object'?x[k]:{};});
+  s.daily=Object.assign({last:'',streak:0},x.daily||{});
+  if(!Array.isArray(s.rivals)||!s.rivals.length||!Array.isArray(s.clans)){initSeason(s);}
+  s.speed=1;
+  s.cb=Object.assign({birth:0,atk:0,def:0},x.cb||{});
+  if(x.bankV!==2){s.bank=0;s.sky=0;s.bankV=2;}
+  {const keep=[];let nc=-1;s.clans.forEach((c,i)=>{if(c&&typeof c.desc==='string'&&c.desc.indexOf('Новый клан')===0){if(i===s.clan)nc=keep.length;keep.push(c);}});s.clans=keep;s.clan=nc;}
+  if(!s.war||s.war.e>=s.clans.length||s.war.e===s.clan)s.war={e:-1,a:0,b:0};
+  if(!(s.campP>=CAMP_MIN))s.campP=CAMP_MIN;if(!(s.denom>=1))s.denom=1;if(!(s.camp>=0))s.camp=0;
+  if(!(s.rt>0))s.rt=Date.now();
+  return s;
+}
+// локальное сохранение у каждого аккаунта Telegram своё (иначе на одном устройстве аккаунты делили бы один прогресс)
+const LKEY=KEY+(TG_USER?'-u'+TG_USER.id:'');
+function loadLocal(){
+  try{
+    const r=localStorage.getItem(LKEY);if(r)return JSON.parse(r);
+    if(TG_USER){const o=localStorage.getItem(KEY);if(o){const x=JSON.parse(o);if(x&&x.pid===TG_USER.id)return x;}} // старое общее сохранение берём только если оно этого же игрока
+    return null;
+  }catch(e){return null;}
+}
+function saveLocal(){try{localStorage.setItem(LKEY,JSON.stringify(S));}catch(e){}}
+function makeNew(){const f=fresh();initSeason(f);return f;}
+let S=(function(){const l=loadLocal();return l?migrate(l):makeNew();})();
+function syncUser(){
+  if(!TG_USER)return;
+  S.name=String(TG_USER.first_name||TG_USER.username||'Игрок').slice(0,24);
+  S.pid=TG_USER.id;
+  const sp=TG.initDataUnsafe&&TG.initDataUnsafe.start_param;
+  if(sp&&/^ref_\d+$/.test(sp)&&!S.ref&&Number(sp.slice(4))!==S.pid)S.ref=Number(sp.slice(4));
+}
+function inviteLink(){return TG_USER&&BOT_LINK.indexOf('YOUR_')<0?BOT_LINK+'?startapp=ref_'+S.pid:'';}
+syncUser();
+const ui={tab:'farm',sub:null,fsub:'atk',ssub:'tix',panel:null,qty:1,catPct:1,bq:{dragon:1,hunter:1,defender:1},lastBuy:{},altPct:50,exBuy:50,exSell:50,pay:'gold',inv:'all',targets:[],pop:null,q:'',cq:'',confirm:'',warOpen:false,boxMsg:'',newClan:''};
+let dirty=false,needRender=false,toastTimer=0,confTimer=0,botAcc=0;
+
+/* ================= формулы ================= */
+const nf=new Intl.NumberFormat('ru-RU',{maximumFractionDigits:0});
+const SUF=['','K','M','B','T','Qa','Qi'];
+function fmtC(n){
+  if(!isFinite(n))return '∞';
+  n=Math.floor(Math.max(0,n)+1e-9);
+  if(n<1000)return String(n);
+  let i=0,v=n;while(v>=1000&&i<SUF.length-1){v/=1000;i++;}
+  return (v>=100?v.toFixed(0):v>=10?v.toFixed(1):v.toFixed(2)).replace('.',',')+SUF[i];
+}
+function fmt(n){if(!isFinite(n))return '∞';n=Math.floor(Math.max(0,n)+1e-9);return n>=1e9?fmtC(n):nf.format(n);}
+function fmtD(gms){
+  const s=Math.max(0,Math.ceil(gms/(1000*TS*S.speed))),h=Math.floor(s/3600),m=Math.floor((s%3600)/60);
+  return (h?h+':'+String(m).padStart(2,'0'):m)+':'+String(s%60).padStart(2,'0');
+}
+function dstr(d){return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();}
+let bigQ=[],bigCur=null,bigTimer=0,bigMute=false;
+function bigMsg(kind,title,text,sub,ms){
+  if(bigMute&&(kind==='atk'||kind==='curse'||kind==='def'))return;
+  if(bigMute&&kind.indexOf('era')===0)bigQ=bigQ.filter(x=>x.kind.indexOf('era')!==0);
+  bigQ.push({kind:kind,title:title,text:text||'',sub:sub||'',ms:ms||4500});
+  if(bigQ.length>4)bigQ.shift();
+  if(!bigCur)bigNext();
+}
+function bigNext(){
+  const el=document.getElementById('fs');if(!el)return;
+  const m=bigQ.shift();
+  if(!m){bigCur=null;el.classList.remove('on');return;}
+  bigCur=m;el.dataset.kind=m.kind;
+  document.getElementById('fsk').textContent=m.kind==='denom'?'Деноминация':m.kind.indexOf('era')===0?'Новая эра':m.kind==='curse'?'Порча':m.kind==='def'?'Защита':'Нападение';
+  document.getElementById('fst').textContent=m.title;
+  document.getElementById('fsp').textContent=m.text;
+  document.getElementById('fss').textContent=m.sub;
+  el.classList.add('on');
+  clearTimeout(bigTimer);bigTimer=setTimeout(bigClose,m.ms);
+}
+function bigClose(){clearTimeout(bigTimer);bigCur=null;bigNext();}
+const ERA_MSG={
+  1:['1 эра: Рост','Растите драконов и яйца. Атак пока нет.'],
+  2:['2 эра: Война','Открыты атаки. Нападайте на других игроков и защищайтесь.'],
+  3:['3 эра: Катаклизм','Драконы вымирают, яйца больше не появляются. Катаклизм усиливается каждые 10 минут.']
+};
+function eraMsg(e,sub){const m=ERA_MSG[e];bigMsg('era'+e,m[0],m[1],sub||'');}
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('on');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('on'),2800);}
+function bankIn(n){S.bank+=n*0.95;S.sky+=n*0.05;}
+function spend(n){S.wings-=n;bankIn(n);}
+function pickEnemy(){const c=[];S.clans.forEach((x,i)=>{if(i!==S.clan)c.push(i);});return c.length?c[rnd(c.length)]:-1;}
+function addLog(m){S.log.unshift(m);if(S.log.length>40)S.log.length=40;}
+
+const world=()=>{let w=S.dragons;for(const r of S.rivals)w+=r.d;return w;};
+const effEra=()=>(S.era===3&&S.noCat>S.gt)?2:S.era;
+const on=t=>t>S.gt;
+function isClosed(k){if(k==='def'||!BOWN[k])return false;if(A(BOWN[k]))return false;const a=S.artR[BOWN[k]];return !S.gbOpen[k]&&!!a;}
+const held=k=>{const a=S.artR[k];return !!(a&&(k==='claws'?on(a.until):true));};
+const A=k=>{const a=S.artR[k];return !!(a&&a.who==='me'&&held(k));};
+const eyeOn=()=>on(S.boost.eye)||A('eye');
+const canAtk=()=>{const e=effEra();return e===2||(e===3&&A('claws'));};
+const botHas=k=>{const a=S.artR[k];return !!(a&&a.who==='bot'&&held(k));};
+function birthMult(){
+  let m=S.gb;
+  if(on(S.boost.birth))m*=1.5;
+  if(S.clan>=0&&on(S.cb.birth))m*=1.25;
+  if(S.inv.lotus>0)m*=1.5;
+  if(on(S.sb.b3))m*=3;
+  if(A('staff'))m*=2;
+  if(A('fountain')){const e=effEra();if(e===1)m*=5;else if(e===2)m*=2;}
+  if(on(S.deb.lotus||0))m*=0.5;
+  return m;
+}
+function atkMult(){
+  let m=1;
+  if(A('sword'))m*=2;if(S.clan>=0&&on(S.cb.atk))m*=1.25;if(S.inv.blade>0)m*=1.5;if(on(S.boost.atk))m*=1.5;if(on(S.sb.a3))m*=3;if(on(S.deb.blade||0))m*=0.5;
+  return m;
+}
+function defMult(){
+  let m=1;
+  if(S.clan>=0&&on(S.cb.def))m*=1.25;if(S.inv.amulet>0)m*=1.5;if(on(S.boost.def))m*=1.5;if(on(S.sb.d3))m*=3;if(on(S.deb.amulet||0))m*=0.5;
+  return m;
+}
+const immMs=()=>IMM_DUR*(S.inv.wreath>0?1.5:1)*(on(S.deb.wreath||0)?0.5:1);
+const rechMs=()=>ATK_CD/(S.inv.swift>0?1.333:1)*(on(S.deb.swift||0)?1.333:1);
+const eph=()=>effEra()===3?0:S.dragons*BIRTH*birthMult();
+const scar=()=>1+1e5/(world()+100);
+const unitCost=k=>UNIT[k].c*S.denom*(A('ring')?0.5:1)*scar();
+const EGG_ERA=[0,1,2.5,10];
+function eggSale(e){
+  if(e<1)return 0;
+  const share=e/(e+world());
+  return Math.min(S.bank*0.5,S.bank*0.05*share*EGG_ERA[effEra()]);
+}
+const eggPrice=()=>{const e=effEra();return e===3?2:e===2?0.5:0.2;};
+const altProt=()=>S.altar>0?0.8*S.altar/(S.altar+S.dragons):0;
+function catGlobal(){
+  if(S.era!==3||on(S.noCat))return 0;
+  let m=S.catN;
+  if(on(S.sb.panic))m*=50;
+  if(on(S.sb.calm))m/=50;
+  return m;
+}
+function catRate(){
+  const g=catGlobal();if(!g)return 0;
+  let m=g;if(S.inv.sphere>0)m*=0.666;if(on(S.deb.sphere||0))m*=1.33;
+  return m;
+}
+const rH=r=>Math.floor(r.d*r.hr*(on(r.deb.blade||0)?0.5:1)*(botHas('sword')?2:1));
+const rD=r=>Math.floor(r.d*r.dr*(r.inv.amulet>0?1.5:1)*(on(r.deb.amulet||0)?0.5:1));
+const clanD=i=>{let w=S.clan===i?S.dragons:0;for(const r of S.rivals)if(r.clan===i)w+=r.d;return w;};
+
+/* --- деноминация: когда в мире слишком много драконов, все числа делятся на 1000 --- */
+function catMin(){return CAT_BASE/S.denom;}
+function denominate(){
+  const k=DENOM_K;
+  S.dragons/=k;S.eggs/=k;S.hunters/=k;S.defenders/=k;S.altar/=k;S.camp/=k;S.catN/=k;S.w2/=k;S.w3/=k;
+  if(!S.dead&&S.dragons>0&&S.dragons<1)S.dragons=1;
+  S.rivals.forEach(r=>{r.d/=k;r.eggs=(r.eggs||0)/k;if(!r.dead&&r.d<1)r.d=1;});
+  S.denom*=k;
+  addLog('Деноминация: числа драконов, яиц и войск уменьшены в '+nf.format(k)+' раз (всего ×'+fmt(S.denom)+').');
+  toast('Деноминация: числа уменьшены в '+nf.format(k)+' раз');
+  bigMsg('denom','Деноминация','Числа драконов, яиц, охотников, защитников, алтаря, лагеря и порогов эр уменьшены в '+nf.format(k)+' раз. Ваша доля в мире не изменилась.','',6000);
+  needRender=true;
+}
+
+/* --- артефакты: цена падает до минимальной за 3 часа после конца таймера --- */
+function artMins(k){const a=S.artR[k];if(!a)return 0;if(on(a.until))return a.mins||0;return Math.max(0,(a.mins||0)*(1-(S.gt-a.until)/ART_DECAY));}
+function artCost(k){return k==='claws'?5*ART_PRICE:Math.ceil(ART_PRICE*(artMins(k)+1));}
+
+/* --- лагерь драконов --- */
+function campGap(){ // отрыв игрока от 2 места (1,0 = 100%); -1, если игрок не первый
+  const al=S.rivals.filter(r=>!r.dead);if(!al.length||S.dragons<1)return -1;
+  let b=1;for(const r of al)if(r.d>b)b=r.d;
+  return S.dragons>b?S.dragons/b-1:-1;
+}
+function campShare(){const g=campGap();return g<=0?0:Math.min(0.95,0.9*Math.log(1+g)/Math.log(11));} // отрыв 1000% = 90%
+const campCost=()=>Math.ceil(S.campP);
+function skipN0(){return S.skipN>0&&on(S.skipReset)?S.skipN:0;}
+const skipCost=()=>SEAL0*Math.pow(SEAL_X,skipN0());
+
+/* ================= ход времени ================= */
+function tick(dtG){
+  const gh=dtG/3600,ms=dtG*1000;
+  S.gt+=ms;
+  S.campP=Math.max(CAMP_MIN,CAMP_MIN+(S.campP-CAMP_MIN)*Math.exp(-CAMP_DECAY*(S.campP/CAMP_MIN)*gh));
+  let w=world();if(w>=DENOM_AT){denominate();w=world();}
+  if(S.era<2&&w>=S.w2){S.era=2;addLog('Началась 2 эра. Теперь можно атаковать других игроков.');toast('Началась 2 эра: открыты атаки');eraMsg(2);needRender=true;}
+  if(S.blk&&w<S.w3)S.blk=false;
+  if(S.era<3&&w>=S.w3&&!S.blk){S.era=3;S.cat0=S.gt;S.catNext=S.gt+CAT_STEP;addLog('Началась 3 эра. Начался катаклизм, драконы вымирают.');toast('Началась 3 эра: катаклизм!');eraMsg(3);needRender=true;}
+  if(S.era===3&&!on(S.noCat)){
+    if(!(S.catNext>0))S.catNext=S.gt+CAT_STEP;
+    if(S.gt>=S.catNext){catGrow();S.catNext=S.gt+CAT_STEP;}
+  }
+  if(effEra()!==3)S.eggs+=S.dragons*BIRTH*birthMult()*gh;
+  const f=catRate();
+  if(f>0&&S.dragons>0){
+    if(f*gh>=S.dragons)S.dAt=S.gt-ms*(1-S.dragons/(f*gh));
+    const lost=Math.min(S.dragons,f*gh),fr=lost/S.dragons;
+    S.dragons-=lost;S.eggs*=1-fr*0.5;S.hunters*=1-fr*0.3;S.defenders*=1-fr*0.3;
+  }
+  if(S.era===3&&on(S.noCat))S.cat0+=ms;
+  if(!S.dead&&S.dragons<1){S.dragons=0;S.eggs=0;S.dead=true;S.deadAt=S.dAt||S.gt;addLog('У вас не осталось драконов. Вы погибли.');needRender=true;}
+  const gg=catGlobal();
+  const bm=(botHas('staff')?2:1)*(botHas('fountain')?(effEra()===1?5:effEra()===2?2:1):1);
+  for(const r of S.rivals){
+    if(r.dead)continue;
+    if(effEra()!==3)r.eggs=(r.eggs||0)+r.d*BIRTH*S.gb*gh;
+    if(gg>0){const k=gg*r.sv*(r.inv.sphere>0?0.666:1)*gh;if(k>=r.d)r.dAt=S.gt-ms*(1-r.d/k);r.d-=k;}
+    else r.d*=Math.exp(r.g*S.gb*bm*(on(r.deb.lotus||0)?0.5:1)*gh);
+    if(r.d<1){if(gg>0){r.d=0;r.dead=true;r.deadAt=r.dAt||S.gt;addLog('Дракон-бот погиб.');needRender=true;}else r.d=1;}
+  }
+  if(S.gt>=S.botNext){S.botNext=S.gt+90000+rnd(120000);botAI();}
+  
+  for(const c of S.clans)c.pool*=Math.exp(0.02*gh);
+  if(effEra()===2){
+    if(S.gt>=S.nextRaid){rivalRaid();S.nextRaid=S.gt+(0.5+Math.random())*GH;}
+    S.war.b+=gh*(0.5+Math.random());
+  }
+  if(S.gt>=S.nextPay)payout();
+  if(S.dead&&S.rivals.every(r=>r.dead))endSeason();
+}
+function catGrow(){
+  // чем меньше драконов в мире относительно порога 3 эры, тем сильнее рост
+  const q=S.w3>0?Math.min(1,Math.max(0,world()/S.w3)):1;
+  const k=CAT_GROW_MIN+(CAT_GROW_MAX-CAT_GROW_MIN)*(1-q);
+  S.catN=Math.min(CAT_MAX/S.denom,S.catN*(1+k));
+  addLog('Катаклизм усилился на '+Math.round(k*100)+'%: '+fmtC(S.catN)+' драконов в час');
+  toast('Катаклизм усилился: '+fmtC(S.catN)+' в час');needRender=true;
+}
+function botAI(){
+  const r=S.rivals[0];if(!r||r.dead)return;
+  r.wings=(r.wings||0)+1.5e6;r.gold=(r.gold||0)+30;
+  for(const k in BOWN)if(botHas(BOWN[k])&&Math.random()<(S.gbOpen[k]?0.1:0.5)){S.gbOpen[k]=S.gbOpen[k]?0:1;needRender=true;addLog('Бот '+(S.gbOpen[k]?'открыл':'закрыл')+' буст «'+GB[k].n+'»');}
+  const ks=Object.keys(ARTS).filter(k=>S.era>=ARTS[k].era),k=ks[rnd(ks.length)],a=S.artR[k],act=a&&on(a.until);
+  if(act&&a.who==='me')return;
+  if(k==='claws'){if(act||r.wings<5*ART_PRICE)return;r.wings-=5*ART_PRICE;bankIn(5*ART_PRICE);S.artR[k]={who:'bot',until:S.gt+300000,mins:5};needRender=true;return;}
+  const mins=artMins(k),cost=Math.ceil(ART_PRICE*(mins+1));
+  if(r.wings<cost)return;
+  r.wings-=cost;bankIn(cost);S.artR[k]={who:'bot',until:(act?a.until:S.gt)+60000,mins:mins+1};needRender=true;
+}
+function step(){
+  const now=Date.now();
+  if(S.breakUntil){
+    S.rt=now;
+    if(now>=S.breakUntil){S.breakUntil=0;S.season++;initSeason(S);ui.panel=null;ui.targets=[];needRender=true;dirty=true;eraMsg(1,'Сезон '+S.season);}
+    return;
+  }
+  let rdt=(now-S.rt)/1000;S.rt=now;
+  if(!(rdt>0))return;
+  const away=rdt>6;
+  let gdt=away?Math.min(rdt*TS,10*3600):rdt*TS*S.speed;
+  if(away)toast('Пока вас не было, прошло '+(gdt/3600).toFixed(1).replace('.',',')+' игровых часа');
+  const n=Math.max(1,Math.ceil(gdt/120)),sub=gdt/n;
+  const era0=S.season;
+  bigMute=away;
+  for(let i=0;i<n;i++){tick(sub);if(S.breakUntil)break;}
+  bigMute=false;
+  botAcc+=Math.min(rdt,60);
+  if(A('bot')&&botAcc>=15){
+    botAcc=0;if(S.botOn===0)return;hatch(true);
+    ['birth','def','atk'].forEach(k=>{const g=GB[k];if(!on(S.boost[k])&&!isClosed(k)&&S.era>=g.era&&S.gold>=g.cost){S.gold-=g.cost;S.boost[k]=S.gt+g.dur;needRender=true;}});
+  }
+}
+function payout(){
+  S.nextPay=S.gt+PAY_EVERY;
+  const pool=S.bank*0.03;S.bank-=pool;
+  const w=world();const shr=w>0?S.dragons/w:0;let got=Math.floor(pool*shr)+Math.floor(S.sky*shr);S.sky=0;
+  if(S.clan>=0){const c=S.clans[S.clan],cd=clanD(S.clan),cp=c.pool*0.5;c.pool-=cp;got+=Math.floor(cp*(cd>0?S.dragons/cd:0));}
+  S.clans.forEach((c,i)=>{if(i!==S.clan)c.pool*=0.6;});
+  S.wings+=got;addLog('Выплата Даров небес: +'+fmt(got));toast('Выплата Даров небес: +'+fmtC(got));needRender=true;
+}
+function rivalRaid(){
+  if(S.dead)return;
+  const c=S.rivals.filter(r=>!r.dead&&rH(r)>0);if(!c.length)return;
+  const r=c[rnd(c.length)];
+  if(A('cloak')){addLog('Плащ невидимости скрыл вас от атаки '+r.n);bigMsg('def','Атака сорвана',r.n+' пытался напасть, но Плащ невидимости скрыл вас.');return;}
+  if(on(S.imm)){addLog('Иммунитет защитил вас от атаки '+r.n);bigMsg('def','Атака сорвана',r.n+' пытался напасть, но Иммунитет защитил вас.');return;}
+  const ap=rH(r),dp=S.defenders*defMult(),claws=botHas('claws'),tot=ap+dp,share=tot>0?ap/tot:1;
+  r.hr*=1-0.4*(1-share);S.defenders=Math.floor(S.defenders*(1-0.4*share));
+  if(ap>dp||claws){
+    const sh=claws?1:share,lost=Math.floor(S.dragons*0.16*sh),eg=Math.floor(S.eggs*(claws?1:0.5*sh));S.dragons-=lost;S.eggs-=eg;r.eggs=(r.eggs||0)+eg;S.imm=S.gt+immMs();S.war.b+=1;
+    let msg=r.n+' победил вас: −'+fmtC(lost)+' драконов, −'+fmtC(eg)+' яиц',curseTxt='';
+    if(Math.random()<0.35){
+      const k=Object.keys(CURSES)[rnd(6)],cu=CURSES[k];
+      if(S.inv[cu.t]>0){S.inv[cu.t]=0;curseTxt='Порча «'+cu.n+'» сняла ваш буст';msg+='. «'+cu.n+'» сняла ваш буст';}
+      else{S.deb[cu.t]=S.gt+DEB_DUR;curseTxt='На вас наложена порча «'+cu.n+'»: '+cu.d;msg+='. На вас наложена порча «'+cu.n+'»';}
+    }
+    addLog(msg);toast(msg);needRender=true;
+    bigMsg(curseTxt?'curse':'atk',curseTxt?'На вас напали и наслали порчу!':'На вас напали!',r.n+' победил вас: −'+fmtC(lost)+' драконов, −'+fmtC(eg)+' яиц.',curseTxt,5500);
+  }else{
+    addLog('Вы отбили атаку игрока '+r.n);needRender=true;bigMsg('def','Атака отбита','Игрок '+r.n+' напал на вас, но ваши защитники выстояли.');
+  }
+}
+function endSeason(){
+  const b=S.rivals[0],win=S.deadAt>(b?b.deadAt:0);
+  const rank=win?1:2,stars=win?1:0,gold=win?1500:300;
+  const pct=PRIZE[rank-1]||0,prize=Math.floor(Math.max(0,S.bank)*pct/100);
+  S.stars+=stars;S.gold+=gold;S.wings+=prize;S.bank-=prize;
+  S.last={season:S.season,rank:rank,stars:stars,gold:gold,prize:prize,pct:pct};
+  S.breakUntil=Date.now()+10000;
+  ui.panel='season';ui.tab='farm';ui.sub=null;ui.targets=[];needRender=true;dirty=true;
+}
+
+/* ================= действия игрока ================= */
+function hatch(silent){
+  if(effEra()===3){if(!silent)toast('В 3 эре яйца выращивать нельзя');return;}
+  const e=Math.floor(S.eggs);if(e<1)return;
+  const g=Math.floor(e*(1-HATCH_LOSS)),f=campShare(),toCamp=Math.floor(g*f),mine=g-toCamp;
+  S.dragons+=mine;S.camp+=toCamp;S.eggs-=e;S.st.grown+=mine;
+  if(!silent)toast('Выращено драконов: +'+fmtC(mine)+(toCamp>0?', в лагерь отдано '+fmtC(toCamp)+' ('+Math.round(f*100)+'%)':''));
+}
+function sellEggs(){
+  const e=Math.floor(S.eggs);if(e<1)return;
+  const w=Math.floor(eggSale(e));if(w<1)return;
+  S.wings+=w;S.bank-=w;S.eggs-=e;S.dragons*=(1-SELL_LOSS);S.st.sold++;
+  toast('Яйца проданы: +'+fmtC(w)+' Даров небес');
+}
+function qtyOf(k){return ui.bq[k]||1;}
+function unitTotal(k,q){const n=S[UNIT[k].k];return unitCost(k)*(q+(n*q+q*q/2)/1000);}
+function buyUnit(k){
+  if(k!=='dragon'&&S.era<2){toast('Появится во 2 эре');return false;}
+  const q=qtyOf(k),c=Math.ceil(unitTotal(k,q));
+  if(q<1||S.wings<c)return false;
+  spend(c);S[UNIT[k].k]+=q;ui.bq[k]=q*2;ui.lastBuy[k]=Date.now();
+  if(k==='defender')S.st.def+=q;if(k==='hunter')S.st.hunt+=q;if(k==='dragon')S.st.grown+=q;
+  toast(UNIT[k].n+': +'+fmtC(q));return true;
+}
+function sacrifice(){
+  const n=Math.floor(S.dragons*ui.altPct/100);if(n<1)return;
+  S.dragons-=n;S.altar+=n*8;S.st.sac++;toast('Жертва принята: +'+fmtC(n*8)+' очков алтаря');
+}
+function exBuy(){
+  const spend=Math.floor(S.wings*ui.exBuy/100/100)*100,g=spend/100;
+  if(g<1)return;bankIn(spend);S.wings-=spend;S.gold+=g;toast('Куплено золота: +'+fmtC(g));
+}
+function exSell(){
+  const g=Math.floor(S.gold*ui.exSell/100);if(g<1)return;
+  S.gold-=g;S.wings+=g*50;toast('Продано золота: +'+fmtC(g*50)+' Даров');
+}
+function gbCost(up){return Math.round((up?150:400)*(1+0.3*S.gbN));}
+const crTxt=()=>fmtC(S.catN);
+const catAmt=()=>Math.floor(S.gold*ui.catPct/100);
+function changeCat(up){if(effEra()!==3){toast('Катаклизм настраивается только в 3 эре');return;}
+  const a=catAmt();if(a<1){toast('Не хватает коинов');return;}
+  const nv=up?S.catN+a:Math.max(catMin(),S.catN-a),cost=Math.abs(nv-S.catN);
+  if(cost<1){toast('Меньше нельзя (минимум '+fmtC(catMin())+' в час)');return;}
+  S.gold-=cost;S.catN=nv;toast('Катаклизм: '+fmtC(S.catN)+' драконов в час');
+}
+function changeGB(up,key){
+  key=key||'gb';const c=gbCost(up);if(S.gold<c)return;
+  const nv=Math.min(1.99,Math.max(0.01,Math.round((S[key]+(up?0.05:-0.05))*100)/100));
+  if(nv===S[key]){toast(up?'Больше нельзя (макс. 1,99)':'Меньше нельзя (мин. 0,01)');return;}
+  S.gold-=c;S[key]=nv;S.gbN++;toast((key==='gb'?'Мировая рождаемость':'Катаклизм')+': ×'+nv.toFixed(2).replace('.',','));
+}
+function camp(){
+  if(on(S.campAt)){toast('Лагерь ещё восстанавливается');return;}
+  const n=S.camp*CAMP_TAKE;
+  if(n<1){toast('В лагере слишком мало драконов');return;}
+  const c=campCost();if(S.gold<c){toast('Не хватает Dra-Coins');return;}
+  S.gold-=c;S.camp-=n;S.dragons+=n;S.campAt=S.gt+CAMP_CD;S.campP*=CAMP_GROW;S.st.camp++;
+  toast('Приручено драконов: +'+fmtC(n)+'. Лагерь уменьшился на 4%');
+}
+function campSkip(){
+  if(!on(S.campAt))return;
+  const c=skipCost();if(S.seals<c){toast('Не хватает печатей времени');return;}
+  const n=skipN0();
+  S.seals-=c;S.campAt=0;S.skipN=n+1;S.skipReset=S.gt+SEAL_RESET();
+  toast('Время ожидания пропущено за '+fmt(c)+' печатей. Следующий пропуск дороже в '+SEAL_X+' раз');
+}
+function SEAL_RESET(){return 24*GH;}
+function useBoost(k){
+  const g=GB[k];if(S.era<g.era||S.gold<g.cost)return;
+  if(isClosed(k)){toast('Буст закрыт владельцем артефакта');return;}
+  if(on(S.boost[k])){toast('Буст уже активен: дождитесь конца таймера');return;}
+  S.gold-=g.cost;S.boost[k]=S.gt+g.dur;S.st.boosts++;toast('Буст «'+g.n+'» активирован');
+}
+function useClanBoost(k){
+  const g=CB[k];if(!g)return;
+  if(S.clan<0){toast('Нужно состоять в клане');return;}
+  if(on(S.cb[k])){toast('Буст уже активен: дождитесь конца таймера');return;}
+  if(S.gold<g.cost)return;
+  S.gold-=g.cost;S.cb[k]=S.gt+CLAN_DUR;toast('«'+g.n+'» активирован на сутки');
+}
+function useStarBoost(k){
+  const g=SB[k];if(!g||S.stars<g.cost)return;
+  if(['panic','calm','stop'].includes(k)&&S.era!==3)return;
+  if(on(bT('s:'+k))){toast('Буст уже активен: дождитесь конца таймера');return;}
+  S.stars-=g.cost;
+  if(k==='stop'){
+    S.dragons*=0.2;S.rivals.forEach(r=>{if(!r.dead)r.d*=0.2;});S.era=2;S.blk=true;S.nextRaid=S.gt+0.8*GH;
+    addLog('Возвращение: погибло 80% драконов, началась 2 эра.');needRender=true;toast('Возвращение: 80% драконов погибло, 2 эра');eraMsg(2,'Возвращение: погибло 80% драконов');return;
+  }
+  S.sb[k]=(k==='b3'||k==='a3'||k==='d3')?1e15:S.gt+STAR_DUR;toast('«'+g.n+'» активировано');
+}
+function rentArt(k){
+  const r=S.artR[k],act=r&&on(r.until);
+  if(k==='claws'){
+    if(S.era<2){toast('Когти появятся во 2 эре');return;}
+    if(act){toast(r.who==='me'?'Когти нельзя продлить':'Артефакт занят другим игроком');return;}
+    const cc=5*ART_PRICE;if(S.wings<cc){toast('Не хватает DF');return;}
+    spend(cc);S.artR[k]={who:'me',until:S.gt+300000,mins:5};toast('«Когти дракона»: 5 минут');return;
+  }
+  if(S.era<ARTS[k].era){toast('Артефакт появится во 2 эре');return;}
+  if(act&&r.who!=='me'){toast('Артефакт занят другим игроком');return;}
+  const mins=artMins(k),cost=Math.ceil(ART_PRICE*(mins+1));
+  if(S.wings<cost){toast('Не хватает DF');return;}
+  spend(cost);
+  S.artR[k]={who:'me',until:(act?r.until:S.gt)+60000,mins:mins+1};
+  toast('«'+ARTS[k].n+'»: +1 минута');
+}
+function toggleGB(k){
+  if(!BOWN[k]||!A(BOWN[k]))return;
+  S.gbOpen[k]=S.gbOpen[k]?0:1;toast('Буст «'+GB[k].n+'» '+(S.gbOpen[k]?'открыт':'закрыт')+' для всех');
+}
+// бусты попадают в инвентарь (S.own) и не действуют, пока игрок их не активирует (тогда S.inv[k]=1); порчи хранятся зарядами в S.inv
+function giveItem(k){if(BOOSTS[k])S.own[k]=(S.own[k]||0)+1;else S.inv[k]=(S.inv[k]||0)+ITEM_PACK;}
+function buyItem(k){
+  if(S.gold<ITEM_GOLD)return;S.gold-=ITEM_GOLD;
+  giveItem(k);toast(BOOSTS[k]?ITEM[k].n+': добавлен в инвентарь':ITEM[k].n+': +'+ITEM_PACK+' зарядов');
+}
+function useItem(k){
+  if(BOOSTS[k]){
+    if(S.inv[k]>0){toast('Буст уже активен');return;}
+    if(!(S.own[k]>0))return;
+    S.own[k]--;S.inv[k]=1;toast('Буст «'+BOOSTS[k].n+'» активирован');
+  }else if(CURSES[k]){
+    if(!(S.inv[k]>0))return;
+    ui.tab='fight';ui.fsub='atk';ui.panel=null;ui.sub=null;ui.confirm='';render();window.scrollTo(0,0);
+    toast('Выберите игрока и нажмите «Порча»');
+  }
+}
+function pickTargets(){
+  const c=S.rivals.filter(r=>!r.dead&&!botHas('cloak')).slice();
+  for(let i=c.length-1;i>0;i--){const j=rnd(i+1),t=c[i];c[i]=c[j];c[j]=t;}
+  ui.targets=c.slice(0,8).map(r=>r.id);ui.pop=null;
+}
+const rid=id=>S.rivals.find(r=>r.id===id);
+function attack(id){
+  const r=rid(id);if(!r)return;
+  if(!canAtk()){toast('Атаки доступны только во 2 эре');return;}
+  if(r.dead){toast('Бот уже погиб');return;}
+  if(botHas('cloak')){toast('Плащ невидимости скрыл врага');return;}
+  if(on(S.atkAt)){toast('Атака перезаряжается');return;}
+  if(on(r.imm)){toast('У игрока иммунитет');return;}
+  if(S.hunters<1){toast('Сначала купите охотников');return;}
+  const ap=S.hunters*atkMult(),dp=rD(r),claws=A('claws'),tot=ap+dp,share=tot>0?ap/tot:1;
+  S.atkAt=S.gt+rechMs();
+  S.hunters=Math.floor(S.hunters*(1-0.4*(1-share)));
+  r.dr*=1-0.4*share;
+  if(ap>dp||claws){
+    const sh=claws?1:share;
+    const loot=Math.max(1,Math.floor(r.d*0.16*sh)),eg=Math.floor((r.eggs||0)*(claws?1:0.5*sh));
+    r.d-=loot;S.dragons+=loot;r.eggs=(r.eggs||0)-eg;S.eggs+=eg;r.imm=S.gt+IMM_DUR;
+    S.st.wins++;S.war.a+=1;
+    const m='Победа над '+r.n+': +'+fmtC(loot)+' драконов, +'+fmtC(eg)+' яиц'+(claws?' (Когти дракона)':'');addLog(m);toast(m);
+  }else{
+    const m='Поражение от '+r.n+': потеряно '+Math.round(0.4*(1-share)*100)+'% охотников';addLog(m);toast(m);
+  }
+}
+function skipAtk(){if(S.seals<1||!on(S.atkAt))return;S.seals--;S.atkAt=0;toast('Время ожидания пропущено');}
+function curse(id,k){
+  const r=rid(id),cu=CURSES[k];if(!r||!cu||!(S.inv[k]>0))return;
+  S.inv[k]--;
+  if(r.inv[cu.t]>0){r.inv[cu.t]=0;toast('«'+cu.n+'»: у '+r.n+' снят буст');}
+  else{r.deb[cu.t]=S.gt+DEB_DUR;toast('«'+cu.n+'» наложена на '+r.n);}
+  ui.pop=null;
+}
+function exterminate(id,kind){
+  const r=rid(id);if(!r||S.gold<EXT_GOLD)return;
+  S.gold-=EXT_GOLD;
+  if(kind==='dragons')r.d*=0.3;else if(kind==='hunters')r.hr*=0.3;else r.dr*=0.3;
+  toast('Истребление: у '+r.n+' уничтожено 70%');ui.pop=null;
+}
+function giveRw(rw){
+  if(rw.g)S.gold+=rw.g;if(rw.s)S.stars+=rw.s;if(rw.sl)S.seals+=rw.sl;if(rw.t)S.tix+=rw.t;if(rw.w)S.wings+=rw.w;
+}
+function rwText(rw){
+  const a=[];if(rw.g)a.push(fmtC(rw.g)+' золота');if(rw.s)a.push(rw.s+' звёзд');if(rw.sl)a.push(rw.sl+' печатей');if(rw.t)a.push(rw.t+' билета');if(rw.w)a.push(fmtC(rw.w)+' Даров');
+  return a.join(', ');
+}
+function openBox(){
+  if(S.tix<1)return;S.tix--;S.st.box++;
+  const r=Math.random()*100;let m;
+  if(r<45){const n=500+rnd(1500);S.wings+=n;m='Дары небес: +'+fmtC(n);}
+  else if(r<80){const n=(2+rnd(5))*100;S.gold+=n;m='Золото: +'+n;}
+  else if(r<88){const n=1+rnd(3);S.seals+=n;m='Печати времени: +'+n;}
+  else if(r<98){const k=Object.keys(ITEM)[rnd(12)];giveItem(k);m=ITEM[k].n+' (в инвентаре)';}
+  else{S.gold+=2000;m='Золото: +2000';}
+  ui.boxMsg=m;toast(m);
+}
+function claimDaily(){
+  const today=dstr(new Date()),y=dstr(new Date(Date.now()-864e5));
+  if(S.daily.last===today)return;
+  S.daily.streak=S.daily.last===y?S.daily.streak+1:1;S.daily.last=today;
+  const rw=DAILY[(S.daily.streak-1)%7];giveRw(rw);toast('Награда дня: '+rwText(rw));
+}
+function joinClan(i){S.clan=i;S.war={e:pickEnemy(),a:0,b:0};toast('Вы вступили в клан '+S.clans[i].n);}
+function createClan(){
+  const n=ui.newClan.trim();if(n.length<3){toast('Название должно быть не короче 3 символов');return;}
+  if(S.gold<200)return;S.gold-=200;
+  S.clans.push({n:n.slice(0,24),col:'#7a4a22',leader:S.name,members:1,desc:'Новый клан. Здесь собираются те, кто хочет вырастить больше всех драконов.',pool:0});
+  S.clan=S.clans.length-1;S.war={e:pickEnemy(),a:0,b:0};ui.newClan='';toast('Клан создан');
+}
+function resetAll(){S=makeNew();ui.panel=null;ui.tab='farm';ui.sub=null;ui.targets=[];toast('Начата новая игра');eraMsg(1,'Сезон '+S.season);}
+
+/* ================= рисунки ================= */
+function sil(x,y,s,c,flip){
+  return '<g transform="translate('+x+' '+y+') scale('+(flip?-s:s)+' '+s+')" fill="'+c+'"><path d="M0 0C-10-20-40-34-64-30-50-22-46-12-46 0-36-10-24-8-18 0z"/><path d="M0 0C10-20 40-34 64-30 50-22 46-12 46 0 36-10 24-8 18 0z"/><ellipse cx="0" cy="8" rx="20" ry="12"/><path d="M-14 4C-30 8-36 22-22 24-28 16-22 10-10 14z"/><path d="M10-2L22-22l8 2-4 14z"/><circle cx="28" cy="-22" r="7"/><path d="M33-24l13 2-12 4z"/></g>';
+}
+function sky(id,a,b,c){return '<defs><linearGradient id="'+id+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="'+a+'"/><stop offset=".62" stop-color="'+b+'"/><stop offset="1" stop-color="'+c+'"/></linearGradient></defs><rect width="360" height="200" fill="url(#'+id+')"/>';}
+function scene(kind){
+  let s='<svg viewBox="0 0 360 200" preserveAspectRatio="xMidYMid slice" aria-hidden="true">';
+  if(kind==='dragons'){
+    s+=sky('sd1','#2b1840','#8a3a3a','#e8812d')+'<circle cx="270" cy="50" r="26" fill="#f3e6c8" opacity=".9"/>';
+    s+='<path d="M0 200V150L50 120l40 36 60-46 50 50 60-40 50 44 50-30v56z" fill="#150d12"/>';
+    s+=sil(80,100,1,'#120a10')+sil(190,70,.75,'#1a0e14',true)+sil(285,120,.9,'#0f080d');
+    s+='<path d="M0 200V176c60-10 120 8 180-2s120 6 180-4v30z" fill="#0b0709"/>';
+  }else if(kind==='hunters'){
+    s+=sky('sh1','#1a0d12','#5a1a14','#c4501d')+'<defs><linearGradient id="fl1" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#ffe27a"/><stop offset="1" stop-color="#ff5a1a" stop-opacity=".2"/></linearGradient></defs>';
+    s+='<path d="M0 200V160l60-30 50 30 70-40 60 40 60-20 60 30v30z" fill="#110a0c"/>';
+    s+='<path d="M232 84c40-26 78-6 126-30-6 38-40 66-86 60-18-2-30-14-40-30z" fill="url(#fl1)" class="flick"/>';
+    s+=sil(160,108,1.7,'#0d0709');
+    s+='<path d="M0 200V182c80-10 160 6 240-4s90 4 120-2v24z" fill="#0a0607"/>';
+  }else if(kind==='def'){
+    s+=sky('sf1','#2a1d3a','#c0643a','#f0a35a')+'<path d="M0 200V140l60-50 50 60 50-40 60 50 60-40 80 50v30z" fill="#2a1a22"/>';
+    s+=sil(180,92,1.25,'#1c1017')+'<g transform="translate(176 92) scale(1.3)"><path d="M0 0l12 5v9c0 8-5 12-12 15-7-3-12-7-12-15V5z" fill="#c0a050" stroke="#3a2a12" stroke-width="1.5"/></g>';
+    s+='<path d="M0 200V176c50-6 100 6 160-2s130 4 200-2v28z" fill="#150c10"/>';
+  }else if(kind==='eggs'){
+    s+='<defs><radialGradient id="eg1" cx=".5" cy=".7" r=".7"><stop offset="0" stop-color="#5a2a12"/><stop offset="1" stop-color="#0a0707"/></radialGradient></defs><rect width="360" height="200" fill="url(#eg1)"/>';
+    s+='<ellipse cx="180" cy="168" rx="190" ry="48" fill="#3a2212"/><ellipse cx="180" cy="160" rx="170" ry="34" fill="#4a2d18"/>';
+    for(let i=0;i<22;i++){const a=i/22*6.283,x=180+Math.cos(a)*172,y=160+Math.sin(a)*32;s+='<path d="M'+(x-18)+' '+(y-4)+' Q'+x+' '+(y-16)+' '+(x+22)+' '+(y+6)+'" stroke="#2a190d" stroke-width="5" fill="none" stroke-linecap="round"/>';}
+    const cols=[['#c0391b',40,128],['#25252d',92,112],['#e6e0d6',150,104],['#2b61b8',212,112],['#d97a1d',270,128],['#6a5a46',320,138]];
+    cols.forEach(c=>{s+='<ellipse cx="'+c[1]+'" cy="'+c[2]+'" rx="27" ry="34" fill="'+c[0]+'" stroke="#0b0807" stroke-width="2"/><ellipse cx="'+(c[1]-9)+'" cy="'+(c[2]-14)+'" rx="5" ry="10" fill="#fff" opacity=".28" transform="rotate(20 '+(c[1]-9)+' '+(c[2]-14)+')"/>';});
+    s+='<path d="M40 112l6 10-8 8 10 8" stroke="#ffb347" stroke-width="2.4" fill="none" class="flick"/>';
+    s+='<path d="M0 200V184c80-14 160 4 240-6s90 2 120-4v26z" fill="#0b0707"/>';
+  }else if(kind==='altar'){
+    s+='<defs><radialGradient id="al1" cx=".5" cy=".62" r=".6"><stop offset="0" stop-color="#ff8a2a" stop-opacity=".75"/><stop offset="1" stop-color="#ff8a2a" stop-opacity="0"/></radialGradient></defs>';
+    s+='<rect width="360" height="200" fill="#0d0d14"/><rect width="360" height="200" fill="url(#al1)"/>';
+    s+='<path d="M60 200V70q30-40 60-10V200zM240 200V60q30-30 60 10V200z" fill="#14121a"/>';
+    s+=sil(90,110,.9,'#181018')+sil(270,110,.9,'#181018',true)+sil(180,70,1.1,'#0f0a10');
+    s+='<path d="M120 200l12-20h96l12 20zM140 180l10-16h60l10 16z" fill="#2a2420"/><rect x="156" y="150" width="48" height="14" fill="#1a1512"/>';
+    s+='<path d="M180 94c-14 14-18 26-10 40 4 6 14 6 20 0 8-14 2-28-10-40z" fill="#ff9a2a" class="flick"/><path d="M180 112c-6 8-8 14-4 20 3 3 8 3 10 0 3-6 0-14-6-20z" fill="#ffe27a" class="fl2"/>';
+  }else{
+    s+=sky('sw1','#5a1410','#a8301e','#e0603a');
+    s+='<path d="M0 200V150l40-30 30 40 50-50 40 50 60-44 50 48 90-30v66z" fill="#220d0c" opacity=".8"/>';
+  }
+  return s+'</svg>';
+}
+const ISLES=(function(){
+  let s='<svg viewBox="0 0 360 450" preserveAspectRatio="xMidYMid meet" aria-hidden="true"><defs><radialGradient id="gl" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ff7a1f" stop-opacity=".5"/><stop offset="1" stop-color="#ff7a1f" stop-opacity="0"/></radialGradient><linearGradient id="rk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4a3a2c"/><stop offset="1" stop-color="#16110e"/></linearGradient><linearGradient id="fg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8a8a96" stop-opacity="0"/><stop offset="1" stop-color="#8a8a96" stop-opacity=".22"/></linearGradient></defs>';
+  s+='<path d="M0 110L36 52l34 78 14 70-44 70L0 260z" fill="#12141a"/><path d="M360 100L322 40l-32 90-14 80 48 56 36-30z" fill="#12141a"/>';
+  s+='<ellipse cx="180" cy="130" rx="190" ry="110" fill="url(#gl)"/>';
+  s+='<path d="M48 150L312 150 280 196 236 232 190 268 168 262 128 226 84 192z" fill="url(#rk)" stroke="#0a0806" stroke-width="2"/>';
+  s+='<path d="M48 150Q180 124 312 150Q180 174 48 150z" fill="#4a3322"/>';
+  [[76,28,112],[256,28,112],[108,34,84],[218,34,84],[152,56,54]].forEach(t=>{
+    s+='<rect x="'+t[0]+'" y="'+t[2]+'" width="'+t[1]+'" height="'+(150-t[2])+'" fill="#2b2a33" stroke="#0a0806" stroke-width="1.5"/>';
+    s+='<path d="M'+(t[0]-5)+' '+t[2]+'L'+(t[0]+t[1]/2)+' '+(t[2]-36)+'L'+(t[0]+t[1]+5)+' '+t[2]+'z" fill="#1b2230" stroke="#0a0806" stroke-width="1.5"/>';
+    s+='<rect x="'+(t[0]+t[1]/2-2)+'" y="'+(t[2]+12)+'" width="4" height="9" fill="#ffb347" class="flick"/><rect x="'+(t[0]+t[1]/2-2)+'" y="'+(t[2]+28)+'" width="4" height="9" fill="#ffb347" class="fl2"/>';
+  });
+  s+='<path d="M168 150v-26a12 12 0 0 1 24 0v26z" fill="#ff8a2a" class="flick"/><path d="M174 150v-20a6 6 0 0 1 12 0v20z" fill="#ffe27a"/>';
+  s+='<path d="M296 150v-46M296 124l16-16M296 112l-14-14M296 134l14-8" stroke="#1a110b" stroke-width="4" stroke-linecap="round"/>';
+  s+='<path d="M20 340L170 340 150 372 104 408 88 410 60 380z" fill="url(#rk)" stroke="#0a0806" stroke-width="2"/><path d="M20 340Q95 326 170 340Q95 354 20 340z" fill="#44301f"/>';
+  s+='<rect x="58" y="300" width="74" height="40" fill="#2f2620" stroke="#0a0806" stroke-width="1.5"/><path d="M48 304L95 274 142 304z" fill="#4a1f14" stroke="#0a0806" stroke-width="1.5"/><rect x="76" y="252" width="38" height="30" fill="#2f2620" stroke="#0a0806" stroke-width="1.5"/><path d="M70 256L95 230 120 256z" fill="#4a1f14" stroke="#0a0806" stroke-width="1.5"/>';
+  s+='<rect x="88" y="312" width="14" height="28" fill="#ff8a2a" class="flick"/><circle cx="95" cy="266" r="4" fill="#ffb347" class="fl2"/>';
+  [[34,336],[152,336]].forEach(f=>{s+='<rect x="'+(f[0]-5)+'" y="'+(f[1]-14)+'" width="10" height="14" fill="#2a1d14"/><path d="M'+f[0]+' '+(f[1]-40)+'c-9 10-12 18-6 26 3 4 9 4 12 0 6-8 3-16-6-26z" fill="#ff9a2a" class="flick"/>';});
+  s+='<path d="M196 360L346 360 322 394 282 424 268 428 236 396z" fill="url(#rk)" stroke="#0a0806" stroke-width="2"/><path d="M196 360Q271 346 346 360Q271 374 196 360z" fill="#44301f"/>';
+  s+='<ellipse cx="271" cy="352" rx="68" ry="24" fill="#3a2212" stroke="#1a0f08" stroke-width="2"/><ellipse cx="271" cy="346" rx="58" ry="16" fill="#4a2d18"/>';
+  [['#c0391b',238],['#25252d',256],['#e6e0d6',276],['#2b61b8',296],['#d97a1d',312]].forEach((e,i)=>{s+='<ellipse cx="'+e[1]+'" cy="'+(334+(i%2)*4)+'" rx="12" ry="16" fill="'+e[0]+'" stroke="#0b0807" stroke-width="1.5"/>';});
+  s+='<path d="M0 380h360v70H0z" fill="url(#fg)"/></svg>';
+  return s;
+})();
+
+/* ================= экраны ================= */
+const hex2=n=>n.charAt(0).toUpperCase()+(n.charAt(1)||'');
+function plate(label,sub,attrs,cls){return '<button class="plate '+(cls||'')+'" '+(attrs||'')+'>'+label+(sub?'<small>'+sub+'</small>':'')+'</button>';}
+function bev(inner,cls){return '<div class="bevel '+(cls||'')+'"><div class="bi">'+inner+'</div></div>';}
+function sec(t,icn){return '<div class="sec">'+t+(icn?ic(icn):'')+'</div>';}
+function subTabs(list,cur,act){return '<div class="t2">'+list.map(x=>'<button data-act="'+act+'" data-v="'+x[0]+'" aria-selected="'+(cur===x[0])+'">'+x[1]+'</button>').join('')+'</div>';}
+function back(act,v){return '<button class="back" data-act="'+act+'" data-v="'+(v||'')+'">'+ic('left')+' Назад</button>';}
+
+function renderHome(){
+  const side=(i,p,l)=>'<button class="round" data-act="panel" data-p="'+p+'"><i>'+ic(i)+'</i>'+l+'</button>';
+  return '<div class="isles">'+ISLES
+    +'<div class="side l">'+side('info','info','Info')+side('people','friends','Друзья')+side('scroll','tasks','Задания')+'</div>'
+    +'<div class="side r">'+side('eye','oracle','Оракул')+side('chest','box','Dragon Box')+side('crown','arts','Артефакты')+'</div>'
+    +'<button class="hot castle" data-act="sub" data-v="dragons"><b>Драконы</b><span class="chips"><span>'+ic('dragon')+'<em data-v="dragons_c"></em></span>'+(S.era>=2?'<span>'+ic('shield')+'<em data-v="defenders_c"></em></span><span>'+ic('swords')+'<em data-v="hunters_c"></em></span>':'')+'</span></button>'
+    +'<button class="hot altar" data-act="sub" data-v="altar"><b>Алтарь</b><span class="chips"><span><em data-v="altar_c"></em>'+ic('altar')+'</span></span></button>'
+    +'<button class="hot nest" data-act="sub" data-v="eggs"><b>Яйца</b><span class="chips"><span><em data-v="eggs_c"></em>'+ic('egg')+'</span></span></button>'
+    +'</div>';
+}
+function unitBlock(k,kind){
+  const scn={dragon:'dragons',hunter:'hunters',defender:'def'}[k];
+  const tagMap={dragon:'<em data-v="dragons"></em> дракон',hunter:'<em data-v="hunters_pow"></em> сила атаки',defender:'<em data-v="defenders_pow"></em> сила защиты'};
+  const title={dragon:'<em data-v="dragons"></em> Драконов',hunter:'<em data-v="hunters"></em> Охотников',defender:'<em data-v="defenders"></em> Защитников'}[k];
+  const cost=Math.ceil(unitTotal(k,qtyOf(k)));
+  let extra=k==='dragon'?'<div class="eph">Производят <em data-v="eph"></em> яиц/час '+ic('egg')+'</div>':'';
+  return bev('<div class="banner">'+scene(scn)+'<span class="tag">'+tagMap[k]+'</span></div><div class="ub"><h3>'+title+'</h3>'+extra
+    +plate('Купить <span data-v="bq" data-a="'+k+'"></span>','<span data-v="bc" data-a="'+k+'"></span> '+ic('wings'),'data-act="buy" data-k="'+k+'" data-w="'+cost+'"','btn1')+'</div>','flat');
+}
+function renderFarmSub(){
+  const tabs=subTabs([['dragons','Драконы'],['eggs','Яйца'],['altar','Алтарь']],ui.sub,'sub');
+  let h=back('sub','')+tabs;
+  if(ui.sub==='dragons'){
+    h+='<p class="note" style="margin:4px 0 12px">Каждая покупка подряд удваивает количество (1, 2, 4, 8…). Если 3 секунды не покупать, количество падает в 5 раз. Чем больше у вас юнитов этого вида, тем дороже каждый.</p>';
+    h+='<div data-active></div><div style="display:grid;gap:14px">'+unitBlock('dragon')+(S.era>=2?unitBlock('hunter')+unitBlock('defender'):'<p class="note">Охотники и защитники появятся во 2 эре. Цена драконов тем выше, чем меньше драконов в мире.</p>')+'</div>';
+  }else if(ui.sub==='eggs'){
+    const e=Math.floor(S.eggs);
+    h+=bev('<div class="banner">'+scene('eggs')+'</div><div class="ub"><h3><em data-v="eggs"></em> '+ic('egg')+'</h3><div style="font-size:15px;font-weight:700">Цена за 1 '+ic('egg')+' из банка ≈ <em data-v="eggprice"></em> '+ic('wings')+'</div>'
+      +'<div class="pair">'+plate('Продать','<em data-v="sellv"></em> '+ic('wings'),'data-act="sell" data-ok="'+(e>=1?1:0)+'"')+plate('Вырастить','+<em data-v="hatchv"></em> '+ic('dragon'),'data-act="hatch" data-ok="'+(e>=1&&effEra()!==3?1:0)+'"','g')+'</div>'
+      +'<div class="warn">'+ic('warn')+'<span>'+Math.round(SELL_LOSS*100)+'% твоих драконов улетят, если ты продашь их яйца!</span></div><div class="warn">'+ic('warn')+'<span>'+Math.round(HATCH_LOSS*100)+'% яиц будет потеряно, если ты вырастишь их!</span></div><div class="warn">'+ic('warn')+'<span>В лагерь уйдёт <b data-v="campshare"></b> выращенных драконов (ваш отрыв от 2 места: <b data-v="campgap"></b>).</span></div>'
+      +(A('bot')?plate(S.botOn!==0?'Остановить бота драконов':'Запустить бота драконов',S.botOn!==0?'сейчас работает':'сейчас остановлен','data-act="botoggle" data-ok="1"','wide sm '+(S.botOn!==0?'p':'g')):'')+'</div>','flat');
+  }else{
+    h+=bev('<div class="banner">'+scene('altar')+'<span class="tag"><em data-v="dragons"></em> дракон</span></div><div class="ub"><h3>Алтарь</h3>'
+      +'<div style="width:100%"><input type="range" id="altr" min="1" max="100" value="'+ui.altPct+'" data-range="altPct" aria-label="Доля драконов для жертвы"><div class="pct"><em data-v="altpct"></em></div></div>'
+      +plate('Жертва','−<em data-v="altn"></em> драконов','data-act="sac"','btn1')
+      +'<div style="width:100%"><div class="kv"><span>Очки алтаря</span><b data-v="altar"></b></div><div class="kv"><span>Защита от катаклизма</span><b data-v="altprot"></b></div></div>'
+      +'<p class="note">За каждого принесённого в жертву дракона алтарь даёт 8 очков. Очки защищают оставшихся драконов от катаклизма.</p></div>','flat');
+  }
+  return h;
+}
+function renderFarm(){
+  let h='';
+  if(!ui.sub){
+    if(!S.hint)h+='<div class="bevel hint" style="margin-top:8px"><div class="bi"><p>Драконы откладывают яйца. Яйца можно вырастить в новых драконов или продать, но проданные яйца уносят часть драконов. Мир проходит три эры: рост, войны и катаклизм. Нажимайте на острова, чтобы начать.</p>'+plate('Понятно','','data-act="hint"','sm')+'</div></div>';
+    h+=renderHome();
+  }else h+=renderFarmSub();
+  return h;
+}
+
+function renderGold(){
+  let h=sec('Dra-Coins','coin')+bev('<div class="pct">Ваш баланс</div><div class="bal"><em data-v="gold"></em> '+ic('coin')+'</div><p class="note" style="text-align:center;margin:0 auto">Dra-Coins тратятся на бусты, Dragon Box, порчи и мировые параметры. 1 Dra-Coin = 100 DF.</p><div class="grid2">'+[100,1000,10000,100000].map(n=>plate('+'+fmtC(n)+' '+ic('coin'),fmtC(n*100)+' '+ic('wings'),'data-act="buycoins" data-n="'+n+'" data-w="'+(n*100)+'"','sm')).join('')+'</div>');
+  h+=sec('Глобальные параметры','info');
+  const pc=(key,t,d,col,icn,dn,up)=>bev('<div class="cardrow"><div class="tile" style="--tc:'+col+'">'+ic(icn)+'</div><div class="cbody"><h3>'+t+' ×<em data-v="'+key+'"></em></h3><p>'+d+'</p><div class="pair">'
+    +plate('Уменьшить','<em>'+fmt(gbCost(false))+'</em> '+ic('coin'),'data-act="'+dn+'" data-g="'+gbCost(false)+'"')+plate('Увеличить','<em>'+fmt(gbCost(true))+'</em> '+ic('coin'),'data-act="'+up+'" data-g="'+gbCost(true)+'"')+'</div></div></div>','flat');
+  h+=pc('gb','Рождаемость','Скорость производства яиц у всех игроков мира (от 0,01 до 1,99)','#5a2a3a','wings','gbd','gbu');
+  if(effEra()===3)h+='<div style="height:10px"></div>'+bev('<div class="cardrow"><div class="tile" style="--tc:#3a1a1a">'+ic('warn')+'</div><div class="cbody"><h3>Катаклизм: <em data-v="cr"></em> в час</h3><p>Каждый час в 3 эре у КАЖДОГО игрока погибает столько драконов. Один для всех. 1 коин = 1 катаклизм в час. Каждые 10 минут катаклизм усиливается сам: чем меньше драконов в мире, тем сильнее рост. В начале каждого сезона он сбрасывается до 1 млрд в час.</p>'
+    +'<div style="width:100%"><input type="range" min="1" max="100" value="'+ui.catPct+'" data-range="catPct" aria-label="Доля коинов"><div class="pct"><em data-v="catpct"></em> коинов = <em data-v="catamt"></em> в час</div></div>'
+    +'<div class="pair">'+plate('Уменьшить','−<em data-v="catamt"></em> '+ic('coin'),'data-act="cbd"')+plate('Увеличить','+<em data-v="catamt"></em> '+ic('coin'),'data-act="cbu"')+'</div></div></div>','flat');
+  h+='<div style="height:10px"></div>';
+  h+=bev('<div class="cardrow"><div class="tile" style="--tc:#5a3a16">'+ic('dragon')+'</div><div class="cbody"><h3>Лагерь драконов</h3><p>В лагере: <b data-v="camppool"></b> '+ic('dragon')+'. Приручив, вы забираете 4% лагеря, и он уменьшается на столько же.</p>'
+    +'<p class="note">Лидер отдаёт в лагерь часть выращенных драконов: чем больше отрыв от 2 места, тем больше. Сейчас: <b data-v="campshare"></b> (отрыв: <b data-v="campgap"></b>).</p>'
+    +'<p class="note">Цена растёт на 25% с каждой покупкой и со временем падает к минимуму 1000. После приручения ожидание 24 часа.</p><div class="pair">'
+    +plate('+<em data-v="campn"></em> драконов','<em data-v="campcd"></em> · <em data-v="campcost"></em> '+ic('coin'),'data-act="camp" data-cd="camp" data-g="'+campCost()+'"')+plate('Пропустить','<em data-v="campskip"></em> '+ic('seal'),'data-act="campskip" data-cd="camp" data-sl="1"','g')+'</div><p class="note"><em data-v="skipinfo"></em></p></div></div>','flat');
+  h+=sec('Бусты','info');
+  h+='<div style="display:grid;gap:10px">';
+  Object.keys(GB).forEach(k=>{
+    const g=GB[k],own=BOWN[k],mine=own&&A(own),closed=isClosed(k),lock=S.era<g.era||closed;
+    h+='<div class="bevel"><div class="bi" style="padding:0"><div class="cardrow'+(lock?' locked':'')+'"><div class="tile" style="--tc:#4a2a16">'+ic(g.ic)+'</div><div class="cbody"><h3>'+g.n+(lock?' '+ic('lock'):'')+'</h3><p>'+g.d+'</p>'
+      +(own?'<p class="note"><b data-v="aleft" data-a="'+own+'"></b></p>':'<p class="note">Всегда открыт</p>')
+      +'<div style="display:flex;gap:8px;width:100%;align-items:stretch;justify-content:center">'
+      +plate(closed?'Закрыто владельцем':lock?'Закрыто':'Активировать',lock?'':'<em>'+g.cost+'</em> '+ic('coin'),'data-act="gboost" data-bk="b:'+k+'" data-k="'+k+'" data-g="'+g.cost+'" data-ok="'+(lock?0:1)+'"','sm')
+      +(mine?plate(S.gbOpen[k]?'Закрыть для всех':'Открыть для всех','','data-act="gtoggle" data-k="'+k+'"','sm g'):'')
+      +'<div class="status">Активно<b data-v="bleft" data-a="b:'+k+'">0</b></div></div></div></div></div></div>';
+  });
+  h+='</div>';
+  h+='<div class="sec"></div>'+bev('<div class="pct">Ваш баланс</div><div class="bal"><em data-v="gold"></em> '+ic('coin')+' DRA-COINS</div>'
+    +'<div><div class="pct" style="margin-bottom:2px">Продать Dra-Coins за DF: 1 Dra-Coin = 50 DF</div><input type="range" min="1" max="100" value="'+ui.exSell+'" data-range="exSell" aria-label="Доля Dra-Coins для продажи"><div class="pct"><em data-v="exsellpct"></em></div></div>'
+    +plate('Продать <span data-v="exsg"></span> '+ic('coin'),'за <span data-v="exsw"></span> '+ic('wings'),'data-act="exsell"','g wide')
+    +'<div><div class="pct" style="margin-bottom:2px">Купить Dra-Coins: 100 DF = 1 Dra-Coin</div><input type="range" min="1" max="100" value="'+ui.exBuy+'" data-range="exBuy" aria-label="Доля DF для покупки"><div class="pct"><em data-v="exbuypct"></em></div></div>'
+    +plate('Купить <span data-v="exbg"></span> '+ic('coin'),'за <span data-v="exbw"></span> '+ic('wings'),'data-act="exbuy"','wide'));
+  return h;
+}
+function renderStars(){
+  let h=sec('Звёзды','star')+bev('<div class="bal"><em data-v="stars"></em> '+ic('star')+'</div><p class="note">Звёзды даются только за 1 место после конца сезона. Купить их нельзя. Тратятся только на эти бусты, каждый стоит 1 звезду. Бусты ×3 действуют до конца сезона с момента активации, остальные 3 часа. Включить снова можно после окончания действия.</p>');
+  h+='<div style="height:10px"></div><div style="display:grid;gap:10px">';
+  Object.keys(SB).forEach(k=>{
+    const g=SB[k],lock=['panic','calm','stop'].includes(k)&&S.era!==3;
+    h+='<div class="bevel"><div class="bi" style="padding:0"><div class="cardrow'+(lock?' locked':'')+'"><div class="tile" style="--tc:#3a2a5a">'+ic(g.ic)+'</div><div class="cbody"><h3>'+g.n+(lock?' '+ic('lock'):'')+'</h3><p>'+g.d+'</p><div style="display:flex;gap:8px;width:100%;align-items:stretch;justify-content:center">'
+      +plate(lock?'Закрыто':'Активировать','<em>'+g.cost+'</em> '+ic('star'),'data-act="sboost" data-bk="s:'+k+'" data-k="'+k+'" data-s="'+g.cost+'" data-ok="'+(lock?0:1)+'"','sm p')
+      +'<div class="status">Активно<b data-v="bleft" data-a="s:'+k+'">0</b></div></div></div></div></div></div>';
+  });
+  return h+'</div>';
+}
+function avatar(n,col){return '<div class="av" style="background:'+col+'">'+esc(hex2(n))+'</div>';}
+function miniItems(r){
+  let h='';Object.keys(BOOSTS).forEach(k=>{if(r.inv[k]>0)h+='<i title="'+esc(BOOSTS[k].n)+'" style="color:'+kcol('i'+k)+'">'+ic(BOOSTS[k].ic)+'</i>';});
+  Object.keys(r.deb).forEach(t=>{if(on(r.deb[t])){const ck=Object.keys(CURSES).find(x=>CURSES[x].t===t);if(ck)h+='<i class="c" title="'+esc(CURSES[ck].n)+'" style="color:'+kcol('x'+ck)+'">'+ic(CURSES[ck].ic)+'</i>';}});
+  h+=artI('bot');
+  return (h?'<div class="mini">'+h+'</div>':'')+(eyeOn()?'<div class="note" style="margin-top:2px">DF: '+fmtC(r.wings||0)+' · Яйца: '+fmtC(r.eggs||0)+' · Dra-Coins: '+fmtC(r.gold||0)+'</div>':'');
+}
+function rivalCard(r){
+  const era2=canAtk(),imm=on(r.imm);
+  const pop=ui.pop&&ui.pop.id===r.id?ui.pop.kind:'';
+  let h='<div class="rv">'+avatar(r.n,r.col)+'<div class="rb"><b>'+esc(r.n)+(imm?'<span class="tag2">Иммунитет <span data-v="imm" data-a="'+r.id+'"></span></span>':'')+'</b>'
+    +'<div class="st"><span>'+ic('dragon')+fmtC(r.d)+'</span><span>'+ic('shield')+'<em data-v="rdef" data-a="'+r.id+'"></em></span><span>'+ic('swords')+fmtC(rH(r))+'</span><span>'+ic('egg')+'<em data-v="tegg" data-a="'+r.id+'"></em></span></div>'+miniItems(r)
+    +'<div class="acts">'+plate('Атака','','data-act="atk" data-id="'+r.id+'" data-cd="atk" data-ok="'+(era2&&S.hunters>=1&&!imm?1:0)+'"','sm')
+    +plate('Порча','','data-act="pop" data-id="'+r.id+'" data-v="curse"','sm p')+plate('Истребить','4000 '+ic('coin'),'data-act="pop" data-id="'+r.id+'" data-v="ext" data-g="4000"','sm p')+'</div>';
+  if(pop==='curse'){
+    const own=Object.keys(CURSES).filter(k=>S.inv[k]>0);
+    h+='<div class="pop">'+(own.length?own.map(k=>'<button data-act="curse" data-id="'+r.id+'" data-k="'+k+'">'+ic(CURSES[k].ic)+CURSES[k].n+' · '+S.inv[k]+'</button>').join(''):'<span class="note">Нет порч. Купите их в магазине.</span>')+'</div>';
+  }else if(pop==='ext'){
+    h+='<div class="pop">'+[['dragons','Драконы'],['hunters','Охотники'],['defenders','Защитники']].map(x=>'<button data-act="ext" data-id="'+r.id+'" data-k="'+x[0]+'">Уничтожить 70%: '+x[1]+'</button>').join('')+'</div>';
+  }
+  return h+'</div></div>';
+}
+function renderAtk(){
+  let h='';
+  const enemy=S.clans[S.war.e];
+  if(effEra()===2&&S.clan>=0&&enemy&&S.war.e!==S.clan)h+='<button class="war" data-act="war"><span class="crest" style="background:'+(enemy?enemy.col:'#555')+';width:36px;height:46px;font-size:9px">'+esc(enemy?enemy.n.slice(0,8):'')+'</span><span class="sp"><small>Война с кланом</small><b>'+esc(enemy?enemy.n:'—')+'</b></span>'+ic('chev')+'</button>';
+  if(ui.warOpen===true&&effEra()===2&&S.clan>=0&&enemy)h+=bev('<div class="kv"><span>Наши победы</span><b>'+Math.floor(S.war.a)+'</b></div><div class="kv"><span>Победы врага</span><b>'+Math.floor(S.war.b)+'</b></div><p class="note">Очко клану приносит каждая ваша победа. Каждое поражение от врага даёт очко противнику.</p>')+'<div style="height:10px"></div>';
+  const e=effEra();
+  if(!canAtk()){
+    h+=bev('<div style="text-align:center"><b style="font:700 16px var(--display)">'+(e===1?'Атаки откроются во 2 эре':'Во время катаклизма атаки недоступны без Когтей дракона')+'</b><p class="note" style="margin:6px auto 0">'+(e===1?'Растите драконов: когда в мире станет достаточно драконов, начнётся 2 эра.':'Спасайте драконов на алтаре и ждите конца сезона.')+'</p></div>');
+  }else{
+    h+='<div class="sec" style="margin-top:6px">Случайные игроки<span class="sp"></span><button class="plate sm" style="min-height:44px;width:48px" data-act="refresh" aria-label="Обновить список">'+ic('refresh')+'</button></div>';
+    h+='<div style="display:flex;gap:8px;align-items:center;margin-bottom:6px;flex-wrap:wrap"><span class="note">Перезарядка атаки: <em data-v="atkcd"></em></span>'+plate('Пропустить','1 '+ic('seal'),'data-act="atkskip" data-cd="atkonly" data-sl="1"','sm g')+'</div>';
+    if(!ui.targets.length)pickTargets();
+    ui.targets.forEach(id=>{const r=rid(id);if(r)h+=rivalCard(r);});
+  }
+  h+=sec('Журнал')+'<div class="logs">'+(S.log.length?S.log.slice(0,12).map(m=>'<p>'+esc(m)+'</p>').join(''):'<p>Пока ничего не произошло.</p>')+'</div>';
+  return h;
+}
+function topEntries(){
+  const arr=S.rivals.map(r=>({n:r.n,col:r.col,d:r.d,h:rH(r),df:rD(r),r:r,me:false}));
+  arr.push({n:S.name,col:'#6aa39a',d:S.dragons,h:S.hunters,df:S.defenders,r:null,me:true});
+  arr.sort((a,b)=>b.d-a.d);
+  return arr.map((x,i)=>{x.i=i+1;return x;});
+}
+function ownedBy(who){return Object.keys(ARTS).filter(k=>{const a=S.artR[k];return a&&a.who===who&&held(k);});}
+const HUE={};(function(){let i=0;[].concat(Object.keys(GB).map(k=>'g'+k),Object.keys(SB).map(k=>'s'+k),Object.keys(CB).map(k=>'c'+k),Object.keys(BOOSTS).map(k=>'i'+k),Object.keys(CURSES).map(k=>'x'+k)).forEach(id=>{HUE[id]=Math.round(i*137.508)%360;i++;});})();
+const kcol=id=>'hsl('+(HUE[id]||0)+' 85% 62%)';
+function activeHTML(icons){
+  const a=[],chip=(pic,txt,t,col)=>a.push('<span'+(icons?' title="'+esc(txt)+'"':'')+(col?' style="color:'+col+'"':'')+'>'+pic+(icons?'':esc(txt)+(t?' · '+t:''))+'</span>');
+  Object.keys(GB).forEach(k=>{if(on(S.boost[k]))chip(ic(GB[k].ic),GB[k].n,fmtD(S.boost[k]-S.gt),kcol('g'+k));});
+  Object.keys(SB).forEach(k=>{if(on(S.sb[k]))chip(ic(SB[k].ic),SB[k].n,S.sb[k]>1e14?'до конца сезона':fmtD(S.sb[k]-S.gt),kcol('s'+k));});
+  if(S.clan>=0)Object.keys(CB).forEach(k=>{if(on(S.cb[k]))chip(ic(CB[k].ic),CB[k].n,fmtD(S.cb[k]-S.gt),kcol('c'+k));});
+  Object.keys(BOOSTS).forEach(k=>{if(S.inv[k]>0)chip(ic(BOOSTS[k].ic),BOOSTS[k].n,'',kcol('i'+k));});
+  Object.keys(CURSES).forEach(k=>{const c=CURSES[k];if(on(S.deb[c.t]||0))chip(ic('skull'),'Порча: '+c.n,fmtD(S.deb[c.t]-S.gt),kcol('x'+k));});
+  ownedBy('me').forEach(k=>{const r=S.artR[k];chip(artPic(k,icons?24:16),ARTS[k].n,r&&on(r.until)?fmtD(r.until-S.gt):'во владении','');});
+  return a.length?'<div class="act'+(icons?' ico':'')+'">'+a.join('')+'</div>':'';
+}
+function artI(who){return ownedBy(who).map(k=>'<i title="'+esc(ARTS[k].n)+'">'+artPic(k,24)+'</i>').join('');}
+function artTxt(who){const o=ownedBy(who);return o.length?'<div class="note" style="margin-top:2px">Артефакты: '+o.map(k=>esc(ARTS[k].n)).join(', ')+'</div>':'';}
+function renderTopList(){
+  const q=ui.q.trim().toLowerCase();
+  const list=topEntries().filter(x=>!q||x.n.toLowerCase().includes(q)||(x.r&&String(x.r.id).includes(q)));
+  return list.slice(0,30).map(x=>'<div class="rv'+(x.me?' me':'')+'">'+avatar(x.n,x.col)+'<div class="rb"><b>'+x.i+'. '+esc(x.n)+(x.me?' (вы)':'')+'</b><div class="st"><span>'+ic('dragon')+fmtC(x.d)+'</span><span>'+ic('shield')+fmtC(x.df)+'</span><span>'+ic('swords')+fmtC(x.h)+'</span><span>'+ic('egg')+(x.r?'<em data-v="tegg" data-a="'+x.r.id+'"></em>':'<em data-v="eggs_c"></em>')+'</span></div>'+(x.r?miniItems(x.r):'<div data-active="icons"></div>')+'</div></div>').join('')||'<p class="note">Никого не найдено.</p>';
+}
+function renderClanList(){
+  const q=ui.cq.trim().toLowerCase();
+  const list=S.clans.map((c,i)=>({c:c,i:i,d:clanD(i)})).filter(x=>!q||x.c.n.toLowerCase().includes(q)).sort((a,b)=>b.d-a.d);
+  return list.map((x,k)=>'<div class="clan"><div class="crest" style="background:'+x.c.col+'">'+esc(x.c.n.slice(0,8))+'</div><div><h3>'+(k+1)+'. '+esc(x.c.n)+'</h3><p>Лидер: '+esc(x.c.leader)+'</p><div class="st"><span>'+ic('dragon')+fmtC(x.d)+'</span><span>'+ic('people')+(S.clan===x.i?x.c.members+1:x.c.members)+'/50</span></div><p>Дары небес: '+fmtC(x.c.pool)+'</p>'
+    +(S.clan===x.i?'<span class="tag2" style="margin:6px 0 0">Ваш клан</span>':plate('Вступить','','data-act="join" data-i="'+x.i+'"','sm'))+'</div></div>').join('')||'<p class="note">Кланов пока нет. Создайте первый во вкладке «Мой клан».</p>';
+}
+function renderFight(){
+  let h=subTabs([['atk','Атаки'],['top','Топ'],['clans','Кланы'],['mine','Мой клан']],ui.fsub,'fsub');
+  if(ui.fsub==='atk')h+=renderAtk();
+  else if(ui.fsub==='top'){
+    h+='<div class="pstats" style="padding:10px;border:1px solid var(--edge);margin-bottom:12px;justify-content:space-around"><span>'+ic('dragon')+'<em data-v="dragons_c"></em></span><span>'+ic('shield')+'<em data-v="defenders_c"></em></span><span>'+ic('swords')+'<em data-v="hunters_c"></em></span></div>';
+    h+=bev('<div class="kv"><span>Банк</span><b data-v="bank"></b></div><p class="note">Призы из банка после конца сезона (по месту): '+PRIZE.map((p,i)=>(i+1)+' — '+String(p).replace('.',',')+'%').join(', ')+'. Остаток банка переходит в следующий сезон.</p>')+'<div style="height:10px"></div>';
+    h+='<div class="sec" style="margin-top:4px">Топ игроков</div><div class="search"><input id="qtop" type="search" placeholder="Имя или ID игрока" value="'+esc(ui.q)+'" aria-label="Поиск игрока"></div><div id="toplist">'+renderTopList()+'</div>';
+  }else if(ui.fsub==='clans'){
+    h+=bev('<div style="display:flex;justify-content:space-around;text-align:center;gap:10px"><div><b style="font:700 13px var(--body)">Дары небес</b><div style="margin-top:3px">'+ic('wings')+' <em data-v="bank"></em></div></div><div><b style="font:700 13px var(--body)">До выплаты</b><div style="margin-top:3px"><em data-v="paycd"></em></div></div></div>')+'<div style="height:10px"></div>';
+    h+='<div class="search"><input id="qclan" type="search" placeholder="Название клана" value="'+esc(ui.cq)+'" aria-label="Поиск клана"></div><div id="clanlist">'+renderClanList()+'</div>';
+  }else{
+    if(S.clan<0){
+      h+=bev('<h3 style="font:700 17px var(--display)">Вы пока не в клане</h3><p class="note">Вступите в готовый клан во вкладке «Кланы» или создайте свой за 200 золота. Участники клана делят его Дары небес пропорционально числу драконов.</p><div class="search" style="margin:0"><input id="newclan" type="text" maxlength="24" placeholder="Название нового клана" value="'+esc(ui.newClan)+'" aria-label="Название клана"></div>'+plate('Создать клан','200 '+ic('coin'),'data-act="mkclan" data-g="200"','wide'));
+    }else{
+      const c=S.clans[S.clan];
+      h+=bev('<div style="display:grid;grid-template-columns:70px minmax(0,1fr);gap:12px"><div class="crest" style="background:'+c.col+';width:70px;height:88px;font-size:12px">'+esc(c.n)+'</div><div><h3 style="font:700 16px/1.25 var(--body);text-transform:uppercase">'+esc(c.n)+'</h3><p style="margin:3px 0">Лидер: '+esc(c.leader)+'</p><div class="st" style="display:flex;gap:12px;flex-wrap:wrap;font-weight:700;font-size:12.5px"><span>'+ic('dragon')+fmtC(clanD(S.clan))+'</span><span>'+ic('people')+(c.members+1)+'/50</span></div><p style="margin-top:3px">Дары небес: '+fmtC(c.pool)+' '+ic('wings')+'</p></div></div><p style="font-size:14px">'+esc(c.desc)+'</p><p style="font-size:12.5px">Распределение награды: Пропорция (пропорционально количеству драконов)</p>'
+        +plate('Клановый чат','','data-act="chat" data-ok="1"','g wide')+plate('Логи клана','','data-act="clog" data-ok="1"','wide')+plate('Выйти из клана','','data-act="leave"','sm wide p'));
+      h+=sec('Клановые бусты','star')+'<div style="display:grid;gap:10px">'+Object.keys(CB).map(k=>{const g=CB[k];return '<div class="bevel"><div class="bi" style="padding:0"><div class="cardrow"><div class="tile" style="--tc:#2a4a2a">'+ic(g.ic)+'</div><div class="cbody"><h3>'+g.n+'</h3><p>'+g.d+'</p><div style="display:flex;gap:8px;width:100%;align-items:stretch;justify-content:center">'+plate('Активировать','<em>'+g.cost+'</em> '+ic('coin'),'data-act="cboost" data-bk="c:'+k+'" data-k="'+k+'" data-g="'+g.cost+'"','sm')+'<div class="status">Активно<b data-v="bleft" data-a="c:'+k+'">0</b></div></div></div></div></div></div>';}).join('')+'</div>';
+      if(ui.warOpen==='log')h+='<div class="sec">Логи клана</div><div class="logs">'+S.log.slice(0,10).map(m=>'<p>'+esc(m)+'</p>').join('')+'</div>';
+    }
+  }
+  return h;
+}
+
+function renderEarn(){
+  const today=dstr(new Date()),can=S.daily.last!==today;
+  const y=dstr(new Date(Date.now()-864e5));
+  const nextStreak=can?(S.daily.last===y?S.daily.streak+1:1):S.daily.streak;
+  const idx=(nextStreak-1)%7;
+  let h=sec('Ежедневная награда','star');
+  h+=bev('<div class="days">'+DAILY.map((r,i)=>{const done=can?i<idx:i<=idx;return '<div class="day'+(done?' done':'')+(i===idx&&can?' now':'')+'"><span>День '+(i+1)+'</span><b>'+rwText(r).replace(' золота',' з.').replace(' звёзд',' зв.').replace(' печатей',' печ.').replace(' билета',' бил.').replace(' Даров',' Д.')+'</b></div>';}).join('')+'</div>'
+    +plate(can?'Забрать награду':'Сегодня уже получено',can?rwText(DAILY[idx]):'','data-act="daily" data-ok="'+(can?1:0)+'"','wide'));
+  h+=sec('Дары небес','wings');
+  h+=bev('<div class="kv"><span>Банк</span><b data-v="bank"></b></div><div class="kv"><span>Копилка Даров небес</span><b data-v="sky"></b></div><div class="kv"><span>Выплата через</span><b data-v="paycd"></b></div><div class="kv"><span>Ваша доля драконов в мире</span><b data-v="share"></b></div><p class="note">Банк пополняется только тратами игроков: 95% потраченных DF идут в банк, 5% в копилку Даров небес. Каждую выплату 3% банка и вся копилка делятся между игроками пропорционально числу драконов. Если вы в клане, вы также получаете часть Даров своего клана.</p>');
+  h+=sec('Ещё способы','coins');
+  h+='<div class="pair">'+plate('Задания','','data-act="panel" data-p="tasks"')+plate('Dragon Box','<em data-v="tix"></em> билетов','data-act="panel" data-p="box"','g')+'</div>';
+  return h;
+}
+function shopCard(k,isCurse){
+    const price=ui.pay==='gold'?ITEM_GOLD+' '+ic('coin'):'';
+  return '<div class="bevel"><div class="bi shopc'+(isCurse?' cu':'')+'"><div class="ico">'+ic(ITEM[k].ic)+'</div><h3>'+ITEM[k].n+'</h3><p>'+ITEM[k].d+'</p>'+plate((isCurse?'+'+ITEM_PACK+' зарядов':'Купить'),price,'data-act="buyitem" data-k="'+k+'" '+(ui.pay==='gold'?'data-g="'+ITEM_GOLD+'"':''),'sm')+'</div></div>';
+}
+function renderShop(){
+  let h=subTabs([['tix','Билеты'],['bc','Бусты и порчи'],['sp','Особенное']],ui.ssub,'ssub');
+  const payTabs='';
+  if(ui.ssub==='tix'){
+    h+=bev('<h3 style="font:700 20px var(--display);text-align:center">Билеты Dragon Box</h3><p class="note" style="text-align:center;margin:0 auto">Один билет открывает один Dragon Box с наградой.</p><div class="bal"><em data-v="tix"></em> '+ic('chest')+'</div><div class="pair">'
+      +plate('1 билет','40 '+ic('coin'),'data-act="buytix" data-n="1" data-g="40"')+plate('5 билетов','180 '+ic('coin'),'data-act="buytix" data-n="5" data-g="180"','g')+'</div>');
+  }else if(ui.ssub==='bc'){
+    h+=bev('<h3 style="font:700 22px var(--display);text-align:center">Бусты</h3><p class="note" style="text-align:center;margin:0 auto">Покупается в инвентарь, а действует только после активации там. Активный буст держится, пока на вас не наложат порчу (порча снимает буст). В конце сезона все бусты сбрасываются.</p>'+payTabs+'<div class="grid2">'+Object.keys(BOOSTS).map(k=>shopCard(k,false)).join('')+'</div>');
+    h+='<div style="height:14px"></div>'+bev('<h3 style="font:700 22px var(--display);text-align:center">Порчи</h3><p class="note" style="text-align:center;margin:0 auto">Применяются к другим игрокам в разделе «Сражения».</p><p style="text-align:center;color:#ff9a3a;font-weight:700;font-size:12.5px">Сейчас действует акция ×20 зарядов за покупку.</p><div class="grid2">'+Object.keys(CURSES).map(k=>shopCard(k,true)).join('')+'</div>');
+  }else{
+    h+=bev('<h3 style="font:700 22px var(--display);text-align:center">Печати времени</h3><p class="note" style="text-align:center;margin:0 auto">С их помощью можно пропустить ожидание новой атаки или перезарядку лагеря.</p><div class="pct">Баланс</div><div class="bal"><em data-v="seals"></em> '+ic('seal')+'</div>'+payTabs
+      +'<div class="grid2">'+[[1,10,1000],[3,25,2500],[10,70,7000]].map(p=>'<div class="bevel"><div class="bi shopc"><div class="ico">'+ic('seal')+'</div><h3>'+p[0]+' '+(p[0]===1?'печать':p[0]<5?'печати':'печатей')+'</h3>'+plate('Купить',ui.pay==='gold'?p[2]+' '+ic('coin'):p[1]+' '+ic('star'),'data-act="buyseal" data-n="'+p[0]+'" '+(ui.pay==='gold'?'data-g="'+p[2]+'"':'data-s="'+p[1]+'"'),'sm')+'</div></div>').join('')+'</div>');
+  }
+  return h;
+}
+function invCard(k){
+  const isB=!!BOOSTS[k],it=ITEM[k],n=isB?(S.own[k]||0):(S.inv[k]||0),active=isB&&S.inv[k]>0;
+  const btn=isB?plate(active?'Уже активен':'Активировать','','data-act="invuse" data-k="'+k+'" data-ok="'+(!active&&n>0?1:0)+'"','sm g'):plate('Применить','','data-act="invuse" data-k="'+k+'" data-ok="1"','sm p');
+  return '<div class="card2'+(isB?'':' cu')+'">'+(active?'<span class="on">Активно</span>':'')+'<span class="bd">'+n+'</span><div class="ico">'+ic(it.ic)+'</div><h3>'+it.n+'</h3><p>'+it.d+'</p><p>'+(isB?'Порча врага снимет этот буст':'Применяется в «Сражениях»')+'</p>'+btn+'</div>';
+}
+function renderInv(){
+  let h='';
+  const act=Object.keys(BOOSTS).filter(k=>S.inv[k]>0).map(k=>'<i class="mini"><i>'+ic(BOOSTS[k].ic)+'</i></i>').join('');
+  h+=bev('<div class="prof"><div class="hexav">'+esc(hex2(S.name))+'</div><div><h3 style="font:700 17px var(--body)">'+esc(S.name)+'</h3><p class="note">ID '+S.pid+' · сезон '+S.season+'</p></div></div>'
+    +'<div class="pstats"><span>'+ic('dragon')+'<em data-v="dragons_c"></em></span><span>'+ic('swords')+'<em data-v="hunters_c"></em></span><span>'+ic('shield')+'<em data-v="defenders_c"></em></span><span>'+ic('egg')+'<em data-v="eggs_c"></em></span><span>'+ic('coin')+'<em data-v="gold_c"></em></span><span>'+ic('altar')+'<em data-v="altar_c"></em></span></div>'
+    +'<div class="mini">'+Object.keys(ARTS).filter(k=>A(k)).map(k=>'<i title="'+esc(ARTS[k].n)+'">'+ic(ARTS[k].ic)+'</i>').join('')+Object.keys(BOOSTS).filter(k=>S.inv[k]>0).map(k=>'<i title="'+esc(BOOSTS[k].n)+'">'+ic(BOOSTS[k].ic)+'</i>').join('')+'</div>'
+    +'<p class="note">Клан: '+(S.clan>=0?esc(S.clans[S.clan].n):'нет')+'</p>');
+  h+='<div class="chipbar">'+[['all','Все'],['b','Бусты'],['c','Порчи'],['a','Артефакты']].map(x=>'<button data-act="invf" data-v="'+x[0]+'" aria-pressed="'+(ui.inv===x[0])+'">'+x[1]+'</button>').join('')+'</div>';
+  let cards='';
+  if(ui.inv==='all'||ui.inv==='b')cards+=Object.keys(BOOSTS).filter(k=>(S.own[k]>0)||S.inv[k]>0).map(invCard).join('');
+  if(ui.inv==='all'||ui.inv==='c')cards+=Object.keys(CURSES).filter(k=>S.inv[k]>0).map(invCard).join('');
+  if(ui.inv==='all'||ui.inv==='a')cards+=Object.keys(ARTS).filter(k=>A(k)).map(k=>'<div class="card2"><span class="on">Артефакт</span><div class="ico">'+ic(ARTS[k].ic)+'</div><h3>'+ARTS[k].n+'</h3><p>'+ARTS[k].d+'</p></div>').join('');
+  h+=cards?'<div class="grid2">'+cards+'</div>':'<p class="note">Здесь пока пусто. Бусты и порчи можно получить в магазине и Dragon Box. Полученные бусты нужно активировать здесь.</p>';
+  return h;
+}
+
+/* --- панели --- */
+function renderPanel(){
+  const p=ui.panel,bk=back('panel','');
+  if(p==='tasks'){
+    return bk+sec('Задания','scroll')+'<div style="display:grid;gap:10px">'+TASKS.map(t=>{
+      const v=Math.min(t.get(),t.n),done=v>=t.n,cl=!!S.tc[t.id];
+      return bev('<div class="task"><h3>'+t.t+'</h3><div class="bar"><i style="width:'+(v/t.n*100)+'%"></i></div><div style="display:flex;justify-content:space-between;gap:8px;align-items:center"><span class="rw">'+fmtC(v)+' / '+fmtC(t.n)+' · '+rwText(t.rw)+'</span>'
+        +plate(cl?'Получено':'Забрать','','data-act="claim" data-id="'+t.id+'" data-ok="'+(done&&!cl?1:0)+'"','sm g')+'</div></div>');}).join('')+'</div>';
+  }
+  if(p==='friends'){
+    const link=inviteLink();
+    return bk+sec('Друзья','people')+bev('<p>Пригласите друзей и растите драконов вместе: в одном клане Дары небес делятся между всеми.</p>'
+      +(link?'<div class="kv"><span>Ваша ссылка</span><b style="font-size:11px;word-break:break-all">'+esc(link)+'</b></div>'+plate('Поделиться в Telegram','','data-act="share" data-ok="1"','wide g')+plate('Скопировать ссылку','','data-act="copy" data-ok="1"','wide')
+        :'<div class="kv"><span>Ваш код приглашения</span><b>'+S.pid+'</b></div>'+plate('Скопировать код','','data-act="copy" data-ok="1"','wide'))
+      +(S.ref?'<p class="note">Вас пригласил игрок '+S.ref+'.</p>':'')
+      +'<p class="note">Награды за приглашения пока не начисляются: для этого нужен сервер, который подтвердит, что друг действительно зашёл в игру.</p>');
+  }
+  if(p==='info'){
+    return bk+sec('Как играть','info')+bev('<div class="info"><p><b>Драконы</b> откладывают яйца каждый час. Яйца можно <b>вырастить</b> (вы потеряете 10%) или <b>продать</b> за Дары небес, но тогда улетит 40% драконов.</p><p><b>Охотники</b> нужны для атак, <b>защитники</b> отбивают чужие атаки. Они покупаются за Дары небес.</p><p><b>Эры.</b> 1 эра: растут только обычные драконы, атак нет. 2 эра: можно атаковать других игроков и забирать у них драконов. 3 эра: катаклизм, драконы вымирают, пока сезон не кончится. Новые яйца в 3 эре не появляются. Эры переключаются, когда общее число драконов в мире достигает порога (счётчик вверху).</p><p><b>Алтарь:</b> жертвуйте драконов и получайте очки. Они защищают от катаклизма.</p><p><b>Золото</b> тратится на бусты и лагерь драконов, <b>звёзды</b> на звёздные бусты, <b>печати времени</b> пропускают ожидание.</p><p><b>Сезон</b> заканчивается, когда погибают все игроки (игрок гибнет при 0 драконов). Звёзды получает только тот, кто пережил соперника. Новый сезон начинается через 10 секунд. Призы делятся из банка по месту: 1 место получает 33,3% банка, остальные меньше (список в «Сражения» → «Топ»). В новом сезоне сбрасываются драконы, артефакты и все бусты (за золото, за звёзды, клановые, из инвентаря), остаются золото, звёзды и клан.</p><p><b>Лагерь драконов:</b> лидер отдаёт в лагерь часть выращенных драконов, и чем больше его отрыв от 2 места, тем больше эта часть. Приручение забирает 4% лагеря за Dra-Coins, ожидание 24 часа.</p><p><b>Деноминация:</b> когда в мире слишком много драконов, числа драконов, яиц и войск делятся на 1000.</p></div>');
+  }
+  if(p==='oracle'){
+    const eye=eyeOn(),e=S.era;
+    let h=bk+sec('Оракул','eye');
+    h+=bev('<div class="kv"><span>Эра</span><b>'+(effEra())+'</b></div><div class="kv"><span>Драконов в мире</span><b data-v="world"></b></div><div class="kv"><span>Деноминация</span><b>×'+fmt(S.denom)+'</b></div><div class="kv"><span>Порог следующей эры</span><b>'+(e===1?fmtC(S.w2):e===2?fmtC(S.w3):'—')+'</b></div>'
+      +(eye?'<div class="kv"><span>Катаклизм, потери в час</span><b>'+(catRate()>0?fmtC(catRate())+' драконов':'нет')+'</b></div><div class="kv"><span>Самый сильный охотник врага</span><b>'+fmtC(Math.max.apply(null,S.rivals.map(rH)))+'</b></div><div class="kv"><span>Лучшая защита врага</span><b>'+fmtC(Math.max.apply(null,S.rivals.map(rD)))+'</b></div><div class="kv"><span>Эффект Глаза</span><b data-v="bleft" data-a="b:eye"></b></div>'
+        :'<p class="note">Подробные данные скрыты. Активируйте буст «Внимание» во вкладке «Золото», чтобы увидеть силу врагов и прогноз катаклизма.</p>'));
+    return h;
+  }
+  if(p==='box'){
+    return bk+sec('Dragon Box','chest')+bev('<div class="bal"><em data-v="tix"></em> '+ic('chest')+'</div>'+plate('Открыть Dragon Box','1 билет','data-act="openbox" data-tix="1"','wide g')+(ui.boxMsg?'<p style="text-align:center;font-weight:700;color:var(--gold)">'+esc(ui.boxMsg)+'</p>':'')
+      +'<p class="note">Награды: Дары небес, золото, печати времени и предметы. Билеты можно купить в магазине за золото.</p>'+plate('Купить билеты','','data-act="gotoshop"','sm wide'));
+  }
+  if(p==='arts'){
+    return bk+sec('Артефакты','crown')+'<p class="note" style="margin-bottom:10px">Каждым артефактом владеет только один игрок, владелец виден здесь и в «Топе». Покупаются за DF: первая минута 1 000 000 DF, каждая следующая на 1 000 000 дороже. Артефакт остаётся у владельца и после конца таймера, пока его не заберёт другой игрок; с этого момента цена падает до минимальной ровно за 3 часа, какой бы высокой она ни была. В конце сезона все артефакты сбрасываются. Забрать можно только когда таймер вышел, продлить может только владелец. Сначала доступны 5 артефактов, остальные во 2 эре. Когти дракона берутся один раз на 5 минут за 5 000 000 DF, продлить их нельзя.</p><div style="display:grid;gap:10px">'+Object.keys(ARTS).map(k=>{
+      const a=ARTS[k],r=S.artR[k],act=r&&on(r.until),mine=act&&r.who==='me',other=act&&!mine,lock=S.era<a.era,cl=k==='claws',own=!!(r&&held(k)&&r.who==='me'&&!act),cost=artCost(k);
+      return '<div class="bevel"><div class="bi" style="padding:0"><div class="cardrow'+(lock?' locked':'')+'"><div class="tile" style="--tc:#2a1d12">'+artPic(k,52)+'</div><div class="cbody"><h3>'+a.n+(lock?' '+ic('lock'):'')+'</h3><p>'+a.d+'</p><p><b data-v="aleft" data-a="'+k+'"></b></p>'+plate(own?'Во владении':lock?'Откроется во 2 эре':cl&&act?(mine?'Продлить нельзя':'Занято'):mine?'Продлить на 1 мин':other?'Занято':cl?'Взять на 5 мин':'Взять на 1 мин',(own||lock||other||(cl&&act))?'':'<em data-v="acost" data-a="'+k+'"></em> '+ic('wings'),'data-act="rent" data-k="'+k+'" data-w="'+cost+'" data-ok="'+(own||lock||other||(cl&&act)?0:1)+'"','sm'+(own?' g':''))+'</div></div></div></div>';}).join('')+'</div>';
+  }
+  if(p==='set'){
+    return bk+sec('Настройки','gear')+bev('<p class="note">1 минута в игре = 1 минута в реальном времени.</p>'
+      +'<div class="kv"><span>Сезон</span><b>'+S.season+'</b></div><div class="kv"><span>Бот драконов</span><b>'+(A('bot')?(S.botOn!==0?'работает':'остановлен'):'не куплен')+'</b></div><div class="kv"><span>Деноминация</span><b>×'+fmt(S.denom)+'</b></div>'
+      +plate(ui.confirm==='reset'?'Точно удалить всё?':'Начать заново','','data-act="reset" data-ok="1"','wide sm'));
+  }
+  if(p==='season'){
+    const l=S.last||{season:0,rank:0,stars:0,gold:0};
+    return sec('Сезон '+l.season+' завершён','trophy')+bev('<div class="bal">Место: '+l.rank+'</div><div class="kv"><span>Награда: звёзды</span><b>+'+l.stars+'</b></div><div class="kv"><span>Награда: золото</span><b>+'+l.gold+'</b></div><div class="kv"><span>Приз из банка ('+String(l.pct||0).replace('.',',')+'%)</span><b>+'+fmtC(l.prize||0)+' DF</b></div><div class="kv"><span>Новый сезон через</span><b data-v="breakcd"></b></div><p class="note">Звёзды выдаются только за 1 место. Золото, звёзды и клан остаются с вами. Артефакты и все бусты сбрасываются.</p>');
+  }
+  return bk;
+}
+
+function render(){
+  let h;
+  try{
+    if(S.breakUntil)ui.panel='season';
+    if(ui.panel)h=renderPanel();
+    else h=ui.tab==='farm'?renderFarm():ui.tab==='gold'?renderGold():ui.tab==='star'?renderStars():ui.tab==='fight'?renderFight():ui.tab==='earn'?renderEarn():ui.tab==='shop'?renderShop():renderInv();
+  }catch(e){h='<div class="err">Ошибка отрисовки: '+esc(e&&e.message||e)+'</div>';}
+  if(S.dead&&!S.breakUntil)h='<div class="err" style="margin-top:8px">Вы погибли: у вас не осталось драконов. Ждите конца сезона.</div>'+h;
+  view.innerHTML=h;
+  document.querySelectorAll('#tabs .tab').forEach(b=>b.setAttribute('aria-selected',String(!ui.panel&&b.dataset.t===ui.tab)));
+  tgBackSync();
+  renderLive();
+}
+
+/* ================= живые значения ================= */
+const view=document.getElementById('view');
+function bT(a){const p=a.split(':');return p[0]==='b'?S.boost[p[1]]:p[0]==='c'?S.cb[p[1]]:(p[1]==='stop'?S.noCat:S.sb[p[1]]);}
+function bLeft(a){const t=bT(a);return on(t)?(t>1e14?'∞':fmtD(t-S.gt)):'0';}
+const LIVE={
+  bank:()=>fmt(S.bank),sky:()=>fmt(S.sky),
+  eralabel:()=>S.era===1?'Осталось до 2 эры':S.era===2?'Осталось до 3 эры':'Драконов в мире',
+  toera:()=>S.era===1?fmt(Math.max(0,S.w2-world())):S.era===2?fmt(Math.max(0,S.w3-world())):fmt(world()),
+  stars:()=>fmt(S.stars),gold:()=>fmt(S.gold),wings:()=>fmt(S.wings),seals:()=>fmt(S.seals),tix:()=>fmt(S.tix),
+  dragons:()=>fmt(S.dragons),hunters:()=>fmt(S.hunters),defenders:()=>fmt(S.defenders),eggs:()=>fmt(S.eggs),altar:()=>fmt(S.altar),
+  dragons_c:()=>fmtC(S.dragons),hunters_c:()=>fmtC(S.hunters),defenders_c:()=>fmtC(S.defenders),eggs_c:()=>fmtC(S.eggs),altar_c:()=>fmtC(S.altar),gold_c:()=>fmtC(S.gold),
+  hunters_pow:()=>fmtC(S.hunters*atkMult()),defenders_pow:()=>fmtC(S.defenders*defMult()),
+  eph:()=>fmt(eph()),
+  eggprice:()=>S.eggs>=1?fmtC(eggSale(Math.floor(S.eggs))/Math.floor(S.eggs)):'—',
+  sellv:()=>fmt(eggSale(Math.floor(S.eggs))),hatchv:()=>fmt(Math.floor(S.eggs*(1-HATCH_LOSS))*(1-campShare())),
+  altpct:()=>ui.altPct+'% драконов',altn:()=>fmt(S.dragons*ui.altPct/100),altprot:()=>(altProt()*100).toFixed(1).replace('.',',')+'%',
+  gb:()=>S.gb.toFixed(2).replace('.',','),cr:()=>crTxt(),catpct:()=>ui.catPct+'%',catamt:()=>fmtC(catAmt()),
+  breakcd:()=>{const s=Math.max(0,Math.ceil((S.breakUntil-Date.now())/1000));return Math.floor(s/60)+':'+String(s%60).padStart(2,'0');},
+  campn:()=>fmt(S.camp*CAMP_TAKE),campcd:()=>on(S.campAt)?fmtD(S.campAt-S.gt):'Готово',campcost:()=>fmt(campCost()),campskip:()=>fmt(skipCost()),
+  camppool:()=>fmt(S.camp),campshare:()=>Math.round(campShare()*100)+'%',
+  campgap:()=>{const g=campGap();return g<=0?'нет, вы не первый':isFinite(g)?fmt(g*100)+'%':'∞';},
+  skipinfo:()=>skipN0()>0?'Пропусков за сутки: '+skipN0()+'. Цена вернётся к '+SEAL0+' печатям через '+fmtD(S.skipReset-S.gt):'Пропуск: '+SEAL0+' печатей, каждый следующий ×'+SEAL_X+', через сутки цена сбрасывается',
+  atkcd:()=>on(S.atkAt)?fmtD(S.atkAt-S.gt):'готово',
+  paycd:()=>fmtD(S.nextPay-S.gt),
+  share:()=>(world()>0?S.dragons/world()*100:0).toFixed(2).replace('.',',')+'%',
+  world:()=>fmtC(world()),
+  exsellpct:()=>ui.exSell+'%',exbuypct:()=>ui.exBuy+'%',
+  exsg:()=>fmt(S.gold*ui.exSell/100),exsw:()=>fmt(Math.floor(S.gold*ui.exSell/100)*50),
+  exbg:()=>fmt(Math.floor(S.wings*ui.exBuy/100/100)),exbw:()=>fmt(Math.floor(S.wings*ui.exBuy/100/100)*100)
+};
+function liveArg(name,a){
+  if(name==='bleft')return bLeft(a);
+  if(name==='aleft'){const r=S.artR[a];return r&&held(a)?'Владелец: '+(r.who==='me'?S.name+' (вы)':S.rivals[0].n)+(on(r.until)?' · '+fmtD(r.until-S.gt):(a!=='claws'&&artMins(a)>0?' · цена упадёт до минимума через '+fmtD(r.until+ART_DECAY-S.gt):'')):'Свободен';}
+  if(name==='acost')return fmt(artCost(a));
+  if(name==='bq')return fmtC(qtyOf(a));
+  if(name==='bc')return fmtC(unitTotal(a,qtyOf(a)));
+  if(name==='imm'){const r=rid(Number(a));return r&&on(r.imm)?fmtD(r.imm-S.gt):'';}
+  if(name==='tegg'){const r=rid(Number(a));return r?(eyeOn()?fmtC(r.eggs||0):'?'):'';}
+  if(name==='rdef'){const r=rid(Number(a));return r?(eyeOn()?fmtC(rD(r)):'?'):'';}
+  return '';
+}
+function renderLive(){
+  document.querySelectorAll('[data-active]').forEach(el=>{const h=activeHTML(el.dataset.active==='icons');if(el.dataset.h!==h){el.innerHTML=h;el.dataset.h=h;}});
+  document.querySelectorAll('[data-v]').forEach(el=>{
+    const n=el.dataset.v;let v;
+    if(el.hasAttribute('data-a'))v=liveArg(n,el.dataset.a);else if(LIVE[n])v=LIVE[n]();else return;
+    if(el.textContent!==v)el.textContent=v;
+  });
+  document.querySelectorAll('input[data-range]').forEach(el=>{el.style.setProperty('--p',el.value+'%');});
+  document.querySelectorAll('button[data-w],button[data-g],button[data-s],button[data-a],button[data-sl],button[data-cd],button[data-ok],button[data-tix],button[data-bk]').forEach(b=>{
+    const d=b.dataset;let off=d.ok==='0';
+    if(d.w){const need=b.dataset.act==='rent'?artCost(d.k):Number(d.w);if(S.wings<need)off=true;}
+    if(d.g){const need=b.dataset.act==='camp'?campCost():Number(d.g);if(S.gold<need)off=true;}
+    if(d.s&&S.stars<Number(d.s))off=true;
+    if(d.a&&b.dataset.act==='buyart'&&S.altar<Number(d.a))off=true;
+    if(d.sl){const need=b.dataset.act==='campskip'?skipCost():Number(d.sl);if(S.seals<need)off=true;}
+    if(d.tix&&S.tix<1)off=true;
+    if(d.bk&&on(bT(d.bk)))off=true;
+    if(d.cd==='atk'&&on(S.atkAt))off=true;
+    if(d.cd==='atkonly'&&!on(S.atkAt))off=true;
+    if(d.cd==='camp'&&b.dataset.act==='camp'&&on(S.campAt))off=true;
+    if(d.cd==='camp'&&b.dataset.act==='campskip'&&!on(S.campAt))off=true;
+    b.disabled=off;
+  });
+}
+function frame(){
+  step();
+  {const t=Date.now();for(const k in ui.bq){if(ui.bq[k]>1&&ui.lastBuy[k]&&t-ui.lastBuy[k]>=3000){ui.bq[k]=Math.max(1,Math.floor(ui.bq[k]/5));ui.lastBuy[k]=t;}}}
+  if(needRender){needRender=false;render();}else renderLive();
+}
+
+/* ================= сохранение: localStorage + Telegram CloudStorage ================= */
+const CS=(TG&&TG.CloudStorage&&TG.isVersionAtLeast&&TG.isVersionAtLeast('6.9'))?TG.CloudStorage:null;
+const CHUNK=3000,CKEY='dn8_';
+let cloudOK=false,cloudBusy=false,cloudAgain=false,cloudLast=0,cloudDirty=false,cloudFails=0,cloudPrevN=0;
+const csCall=(fn,...a)=>new Promise((res,rej)=>{try{CS[fn](...a,(e,v)=>e?rej(new Error(String(e))):res(v));}catch(e){rej(e);}});
+function splitChunks(str){ // режем по 3000 символов (лимит Telegram 4096), не разрывая суррогатные пары
+  const out=[];let i=0;
+  while(i<str.length){let e=Math.min(str.length,i+CHUNK);if(e<str.length){const c=str.charCodeAt(e-1);if(c>=0xD800&&c<=0xDBFF)e--;}out.push(str.slice(i,e));i=e;}
+  return out.length?out:['{}'];
+}
+function persist(){
+  step();if(needRender){needRender=false;render();}
+  S.savedAt=Date.now();saveLocal();cloudDirty=true;cloudWrite();
+}
+async function cloudWrite(force){
+  if(!cloudOK||!cloudDirty)return;
+  if(!force&&Date.now()-cloudLast<15000)return;
+  if(cloudBusy){cloudAgain=true;return;}
+  cloudBusy=true;cloudDirty=false;
+  try{
+    const parts=splitChunks(JSON.stringify(S)),n=parts.length,items={};
+    parts.forEach((p,i)=>{items[CKEY+i]=p;});
+    await csCall('setItems',items);
+    await csCall('setItem',CKEY+'meta',JSON.stringify({n:n,t:S.savedAt})); // метка пишется последней: частично записанное сохранение не прочитается
+    if(cloudPrevN>n){const old=[];for(let i=n;i<cloudPrevN;i++)old.push(CKEY+i);await csCall('removeItems',old);}
+    cloudPrevN=n;cloudLast=Date.now();cloudFails=0;
+  }catch(e){cloudDirty=true;cloudFails++;if(cloudFails>=5)cloudOK=false;}
+  cloudBusy=false;
+  if(cloudAgain){cloudAgain=false;cloudWrite();}
+}
+async function initCloud(){
+  if(!CS)return;
+  try{
+    const m=await Promise.race([csCall('getItem',CKEY+'meta'),new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),8000))]);
+    if(m){
+      const meta=JSON.parse(m);cloudPrevN=meta.n||0;
+      if((meta.t||0)>(S.savedAt||0)&&meta.n>0){
+        const keys=[];for(let i=0;i<meta.n;i++)keys.push(CKEY+i);
+        const vals=await csCall('getItems',keys);
+        const rem=migrate(JSON.parse(keys.map(k=>vals[k]||'').join('')));
+        S=rem;syncUser();ui.targets=[];step();render();
+      }
+    }
+    cloudOK=true;cloudDirty=true;dirty=true;
+  }catch(e){cloudOK=false;}
+}
+function tgBackSync(){
+  if(!TG||!TG.BackButton)return;
+  try{(ui.panel&&!S.breakUntil)||ui.sub?TG.BackButton.show():TG.BackButton.hide();}catch(e){}
+}
+function tgBack(){
+  if(S.breakUntil)return;
+  if(ui.panel){ui.panel=null;dirty=true;}else if(ui.sub)ui.sub=null;else return;
+  render();window.scrollTo(0,0);
+}
+function commit(){dirty=true;render();}
+
+/* ================= события ================= */
+function act(a,el){
+  const d=el.dataset,id=Number(d.id);
+  if(S.breakUntil)return;
+  if(S.dead&&!['tab','sub','panel','fsub','war','refresh','pop','ssub','invf','qty','hint','clog'].includes(a)){toast('Вы погибли: ждите конца сезона');return;}
+  switch(a){
+    case 'tab':ui.tab=d.t;ui.panel=null;ui.sub=null;ui.pop=null;ui.warOpen=false;ui.confirm='';render();window.scrollTo(0,0);return;
+    case 'sub':ui.sub=d.v||null;render();window.scrollTo(0,0);return;
+    case 'panel':ui.panel=d.p||null;if(ui.panel==='season'||!ui.panel)dirty=true;render();window.scrollTo(0,0);return;
+    case 'hint':S.hint=1;commit();return;
+    case 'qty':ui.qty=d.v==='max'?'max':Number(d.v);render();return;
+    case 'buy':if(buyUnit(d.k))commit();else renderLive();return;
+    case 'hatch':hatch(false);commit();return;
+    case 'sell':
+      if(ui.confirm!=='sell'){ui.confirm='sell';clearTimeout(confTimer);confTimer=setTimeout(()=>{ui.confirm='';render();},3500);toast('Нажмите «Продать» ещё раз: улетит '+Math.round(SELL_LOSS*100)+'% драконов');return;}
+      ui.confirm='';sellEggs();commit();return;
+    case 'sac':sacrifice();commit();return;
+    case 'gbu':changeGB(true);commit();return;
+    case 'gbd':changeGB(false);commit();return;
+    case 'cbu':changeCat(true);commit();return;
+    case 'cbd':changeCat(false);commit();return;
+    case 'rent':rentArt(d.k);commit();return;
+    case 'gtoggle':toggleGB(d.k);commit();return;
+    case 'share':{const l=inviteLink();if(!l)return;const u='https://t.me/share/url?url='+encodeURIComponent(l)+'&text='+encodeURIComponent('Играй со мной в Драконье Гнездо!');try{TG.openTelegramLink(u);}catch(e){window.open(u,'_blank');}return;}
+    case 'camp':camp();commit();return;
+    case 'botoggle':S.botOn=S.botOn!==0?0:1;toast(S.botOn?'Бот драконов запущен':'Бот драконов остановлен: яйца больше не выращиваются автоматически');commit();return;
+    case 'invuse':useItem(d.k);commit();return;
+    case 'campskip':campSkip();commit();return;
+    case 'gboost':useBoost(d.k);commit();return;
+    case 'sboost':useStarBoost(d.k);commit();return;
+    case 'cboost':useClanBoost(d.k);commit();return;
+    case 'buycoins':{const n=Number(d.n),c=n*100;if(S.wings<c){toast('Не хватает DF');return;}spend(c);S.gold+=n;toast('Dra-Coins: +'+fmtC(n));commit();return;}
+    case 'exbuy':exBuy();commit();return;
+    case 'exsell':exSell();commit();return;
+    case 'fsub':ui.fsub=d.v;ui.pop=null;render();return;
+    case 'war':ui.warOpen=!ui.warOpen;render();return;
+    case 'refresh':pickTargets();render();return;
+    case 'atk':attack(id);commit();return;
+    case 'atkskip':skipAtk();commit();return;
+    case 'pop':ui.pop=(ui.pop&&ui.pop.id===id&&ui.pop.kind===d.v)?null:{id:id,kind:d.v};render();return;
+    case 'curse':curse(id,d.k);commit();return;
+    case 'ext':exterminate(id,d.k);commit();return;
+    case 'join':joinClan(Number(d.i));commit();return;
+    case 'leave':S.clan=-1;toast('Вы вышли из клана');commit();return;
+    case 'mkclan':createClan();commit();return;
+    case 'chat':toast('Клановый чат недоступен в этой версии');return;
+    case 'clog':ui.warOpen=ui.warOpen==='log'?false:'log';render();return;
+    case 'daily':claimDaily();commit();return;
+    case 'pay':ui.pay=d.v;render();return;
+    case 'ssub':ui.ssub=d.v;render();return;
+    case 'buystars':if(S.gold>=Number(d.g)){S.gold-=Number(d.g);S.stars+=Number(d.n);toast('Звёзды: +'+d.n);commit();}return;
+    case 'buytix':if(S.gold>=Number(d.g)){S.gold-=Number(d.g);S.tix+=Number(d.n);toast('Билеты: +'+d.n);commit();}return;
+    case 'buyitem':buyItem(d.k);commit();return;
+    case 'buyseal':{
+      const n=Number(d.n),gold=ui.pay==='gold',c=Number(gold?d.g:d.s);
+      if(gold){if(S.gold<c)return;S.gold-=c;}else{if(S.stars<c)return;S.stars-=c;}
+      S.seals+=n;toast('Печати времени: +'+n);commit();return;}
+    case 'invf':ui.inv=d.v;render();return;
+    case 'claim':{
+      const t=TASKS.find(x=>x.id===d.id);
+      if(t&&!S.tc[t.id]&&t.get()>=t.n){S.tc[t.id]=1;giveRw(t.rw);toast('Награда: '+rwText(t.rw));commit();}
+      return;}
+    case 'copy':{
+      const txt=inviteLink()||String(S.pid);
+      try{navigator.clipboard.writeText(txt).then(()=>toast('Код скопирован'),()=>toast('Код: '+txt));}catch(e){toast('Код: '+txt);}
+      return;}
+    case 'openbox':openBox();commit();return;
+    case 'gotoshop':ui.panel=null;ui.tab='shop';ui.ssub='tix';render();window.scrollTo(0,0);return;
+    case 'buyart':{
+      const ar=ARTS[d.k];if(!ar||S.arts[d.k]||S.altar<ar.cost)return;
+      S.altar-=ar.cost;S.arts[d.k]=1;toast('Артефакт получен: '+ar.n);commit();return;}
+    case 'speed':S.speed=Number(d.v);commit();return;
+    case 'reset':
+      if(ui.confirm!=='reset'){ui.confirm='reset';clearTimeout(confTimer);confTimer=setTimeout(()=>{ui.confirm='';if(ui.panel==='set')render();},3500);render();return;}
+      ui.confirm='';resetAll();persist();render();return;
+  }
+}
+document.getElementById('fs').addEventListener('click',bigClose);
+document.addEventListener('click',ev=>{
+  const el=ev.target.closest('[data-act]');
+  if(!el||el.disabled)return;
+  if(TG&&TG.HapticFeedback){try{TG.HapticFeedback.impactOccurred('light');}catch(e){}}
+  act(el.dataset.act,el);
+});
+document.addEventListener('input',ev=>{
+  const t=ev.target;
+  if(t.matches&&t.matches('input[data-range]')){ui[t.dataset.range]=Number(t.value);renderLive();return;}
+  if(t.id==='qtop'){ui.q=t.value;const l=document.getElementById('toplist');if(l)l.innerHTML=renderTopList();return;}
+  if(t.id==='qclan'){ui.cq=t.value;const l=document.getElementById('clanlist');if(l)l.innerHTML=renderClanList();return;}
+  if(t.id==='newclan'){ui.newClan=t.value;}
+});
+
+/* ================= запуск ================= */
+document.querySelectorAll('[data-ic]').forEach(el=>{el.outerHTML=ic(el.dataset.ic);});
+if(TG){
+  const tg=f=>{try{f();}catch(e){}};
+  tg(()=>TG.ready());tg(()=>TG.expand());
+  tg(()=>TG.disableVerticalSwipes&&TG.disableVerticalSwipes());
+  tg(()=>TG.setHeaderColor('#0d0b0a'));tg(()=>TG.setBackgroundColor('#07080b'));
+  tg(()=>TG.setBottomBarColor&&TG.setBottomBarColor('#0a0908'));
+  tg(()=>TG.BackButton.onClick(tgBack));
+}
+step();
+render();
+if(S.era===1&&S.gt<10000&&!S.breakUntil)eraMsg(1,'Сезон '+S.season);
+setInterval(frame,500);
+let autoN=0;
+setInterval(()=>{autoN++;if(dirty||autoN%6===0){dirty=false;persist();}cloudWrite();},5000);
+document.addEventListener('visibilitychange',()=>{if(document.hidden){dirty=false;persist();cloudWrite(true);}else frame();});
+window.addEventListener('pagehide',()=>{persist();cloudWrite(true);});
+initCloud();
+})();
+</script>
+</html>
